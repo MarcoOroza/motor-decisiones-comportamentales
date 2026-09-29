@@ -1,0 +1,34 @@
+{
+    "execution_id": "b8338a9f-6a3d-4350-90a0-2834c6a0d4be",
+    "timestamp_utc": "2026-09-29T20:20:16.972548Z",
+    "strategy_name": "PowerCurve_Behavioral_v1",
+    "total_cuentas_procesadas": 2500,
+    "distribucion_decisiones": {
+        "MANTENER_CONDICIONES_ACTUALES": 1132,
+        "INCREMENTAR_LINEA_PROACTIVO": 625,
+        "REDUCIR_LINEA_PREVENTIVA": 399,
+        "BLOQUEO_TEMPORAL_LINEA": 219,
+        "CANCELAR_LINEA_Y_ENVIO_COBRANZA": 125
+    },
+    "distribucion_reglas": {
+        "R0_MANTENIMIENTO": 1132,
+        "R4_EXPANSION": 625,
+        "R3_MITIGACION": 399,
+        "R2_CONTENCION": 219,
+        "R1_KNOCKOUT": 125
+    },
+    "distribucion_estatus": {
+        "ACTIVA_REGULAR": 1132,
+        "ACTIVA_PREMIUM": 625,
+        "ACTIVA_REDUCIDA": 399,
+        "SUSPENDIDA_TEMPORAL": 219,
+        "CANCELADA_POR_RIESGO": 125
+    },
+    "metricas_financieras": {
+        "limite_vigente_total_mxn": 84632000.0,
+        "nuevo_limite_total_mxn": 87822685.29,
+        "delta_exposicion_neta_mxn": 3190685.29,
+        "saldo_cartera_evaluada_mxn": 52325041.39,
+        "porcentaje_variacion_linea": 3.77
+    }
+}

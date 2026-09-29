@@ -1,0 +1,10 @@
+# Dependencias del Prototipo Motor de Decisiones Comportamentales
+# Residencia Profesional - Marco Antonio Oroza Ortega - TESE (División de Informática)
+
+pandas>=2.1.0
+numpy>=1.26.0
+pydantic>=2.5.0
+streamlit>=1.32.0
+plotly>=5.19.0
+pytest>=8.0.0
+openpyxl>=3.1.2

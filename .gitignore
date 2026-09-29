@@ -1,0 +1,23 @@
+# Entornos virtuales
+.venv/
+env/
+venv/
+ENV/
+
+# Bytecode y caches de Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Archivos de configuración local y logs
+*.log
+.vscode/
+.idea/
+
+# Sistema operativo
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
