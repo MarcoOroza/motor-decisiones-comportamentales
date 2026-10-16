@@ -39,6 +39,45 @@ class PolicyParameters:
     # Metodología Avanzada: Matriz Bidimensional de Dimensionamiento
     habilitar_matriz_dinamica: bool = False
 
+    def __init__(
+        self,
+        dias_mora_default: int = 90,
+        dias_mora_reestructura: int = 30,
+        dias_mora_contencion: int = 30,
+        uso_linea_critico: float = 95.0,
+        dias_mora_sobregiro: int = 15,
+        score_subprime: int = 580,
+        uso_linea_fatiga: float = 80.0,
+        minimos_consecutivos_alerta: int = 4,
+        score_minimos: int = 620,
+        factor_reduccion_linea: float = 0.60,
+        factor_proteccion_saldo: float = 1.05,
+        score_prime: int = 720,
+        uso_min_expansion: float = 40.0,
+        uso_max_expansion: float = 75.0,
+        antiguedad_min_meses: int = 12,
+        factor_incremento_linea: float = 1.25,
+        habilitar_matriz_dinamica: bool = False,
+        **kwargs
+    ):
+        self.dias_mora_default = dias_mora_default
+        self.dias_mora_reestructura = dias_mora_reestructura
+        self.dias_mora_contencion = dias_mora_contencion
+        self.uso_linea_critico = uso_linea_critico
+        self.dias_mora_sobregiro = dias_mora_sobregiro
+        self.score_subprime = score_subprime
+        self.uso_linea_fatiga = uso_linea_fatiga
+        self.minimos_consecutivos_alerta = minimos_consecutivos_alerta
+        self.score_minimos = score_minimos
+        self.factor_reduccion_linea = factor_reduccion_linea
+        self.factor_proteccion_saldo = factor_proteccion_saldo
+        self.score_prime = score_prime
+        self.uso_min_expansion = uso_min_expansion
+        self.uso_max_expansion = uso_max_expansion
+        self.antiguedad_min_meses = antiguedad_min_meses
+        self.factor_incremento_linea = factor_incremento_linea
+        self.habilitar_matriz_dinamica = habilitar_matriz_dinamica
+
 
 # Códigos de Razón y Explicabilidad
 REASON_CODES = {

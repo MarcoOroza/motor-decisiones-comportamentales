@@ -340,9 +340,9 @@ with st.sidebar:
         score_prime=p_score_prime,
         uso_min_expansion=p_uso_min_exp,
         uso_max_expansion=p_uso_max_exp,
-        factor_incremento_linea=p_factor_incremento,
-        habilitar_matriz_dinamica=p_matriz_dinamica
+        factor_incremento_linea=p_factor_incremento
     )
+    policy_params.habilitar_matriz_dinamica = p_matriz_dinamica
 
     st.markdown("---")
     st.markdown("""
@@ -754,24 +754,22 @@ if df_raw is not None:
                 p_challenger = PolicyParameters(
                     dias_mora_default=60,
                     score_prime=750,
-                    factor_reduccion_linea=0.50,
-                    habilitar_matriz_dinamica=True
+                    factor_reduccion_linea=0.50
                 )
             elif "Expansivo" in challenger_preset:
                 p_challenger = PolicyParameters(
                     dias_mora_default=90,
                     score_prime=700,
                     factor_incremento_linea=1.35,
-                    uso_max_expansion=85.0,
-                    habilitar_matriz_dinamica=True
+                    uso_max_expansion=85.0
                 )
             else: # Anti-mora
                 p_challenger = PolicyParameters(
                     dias_mora_default=75,
                     dias_mora_contencion=20,
-                    uso_linea_critico=90.0,
-                    habilitar_matriz_dinamica=True
+                    uso_linea_critico=90.0
                 )
+            p_challenger.habilitar_matriz_dinamica = True
 
         with col_c_cfg2:
             st.markdown("#### Distribución de Tráfico A/B")
