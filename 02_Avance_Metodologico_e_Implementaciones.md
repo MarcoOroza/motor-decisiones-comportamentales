@@ -99,6 +99,14 @@ Se diseñaron e incorporaron pruebas automatizadas adicionales, elevando la bate
 - `test_dynamic_matrix_sizing()`: Comprueba que un cliente con score 810 reciba exactamente +35% de cupo y uno con score 730 reciba +15%.
 - `test_champion_challenger_simulation()`: Verifica la correcta partición del universo de cuentas y la integridad de los KPIs de cada política.
 
+### 3.5 Rediseño Integral de la Interfaz y Experiencia de Usuario (UI/UX Fintech)
+Para elevar la plataforma al nivel visual de un software bancario corporativo, se transformó la capa de presentación:
+- **Sistema Tipográfico Fintech:** Adopción de las fuentes *Plus Jakarta Sans* para lectura ejecutiva y *JetBrains Mono* para datos numéricos y de contrato.
+- **Tarjetas KPI Personalizadas:** Sustitución de las métricas planas por tarjetas con elevación suave, micro-animaciones en *hover*, contenedores de iconos temáticos y cápsulas de variación porcentual.
+- **Navegación Moderna tipo Cápsula:** Rediseño de las pestañas en formato *pill segmented controls* con iluminación y sombras suaves.
+- **Velocímetro Gauge FICO (Expediente 360°):** Integración de un tacómetro interactivo en Plotly que mapea la calificación crediticia del cliente entre 300 y 850 puntos con cuatro bandas visuales de riesgo (*Subprime*, *Vulnerable*, *Moderado*, *Prime*).
+- **Homogeneización Cromática:** Unificación estricta de la paleta de colores en todas las visualizaciones (Esmeralda, Azul Índigo, Ámbar, Naranja y Carmesí) para facilitar la lectura inmediata a comités evaluadores.
+
 ---
 
 ## 4. Resultados Experimentales en la Cartera Base (2,500 Cuentas)
