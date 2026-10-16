@@ -11,6 +11,7 @@ from src.engine.rules import (
 )
 from src.engine.strategy_manager import DecisionEngine
 from src.engine.audit import generate_audit_summary
+from src.engine.champion_challenger import ChampionChallengerSimulator
 
 __all__ = [
     "PolicyParameters",
@@ -18,6 +19,7 @@ __all__ = [
     "DECISION_NAMES",
     "ESTATUS_CUENTA",
     "DecisionEngine",
+    "ChampionChallengerSimulator",
     "generate_audit_summary",
     "evaluate_rule_1_knockout",
     "evaluate_rule_2_contencion",

@@ -115,13 +115,31 @@ class DecisionEngine:
         limite_r1 = 0.0
         # R2: Mantiene el límite actual (pero tarjeta suspendida temporalmente)
         limite_r2 = df_out["LIMITE_CREDITO_ACTUAL"]
-        # R3: Reducción preventiva al 60%, protegiendo 105% del saldo para evitar sobregiro artificial
-        limite_r3 = np.maximum(
-            df_out["SALDO_ACTUAL"] * self.params.factor_proteccion_saldo,
-            df_out["LIMITE_CREDITO_ACTUAL"] * self.params.factor_reduccion_linea
-        )
-        # R4: Incremento del 25% redondeado a centavos
-        limite_r4 = np.round(df_out["LIMITE_CREDITO_ACTUAL"] * self.params.factor_incremento_linea, 2)
+
+        # R3: Reducción preventiva (estática o por matriz dinámica de score)
+        if self.params.habilitar_matriz_dinamica:
+            factor_red = np.where(df_out["SCORE_COMPORTAMENTAL"] < 520, 0.50, 0.65)
+            limite_r3 = np.maximum(
+                df_out["SALDO_ACTUAL"] * self.params.factor_proteccion_saldo,
+                df_out["LIMITE_CREDITO_ACTUAL"] * factor_red
+            )
+        else:
+            limite_r3 = np.maximum(
+                df_out["SALDO_ACTUAL"] * self.params.factor_proteccion_saldo,
+                df_out["LIMITE_CREDITO_ACTUAL"] * self.params.factor_reduccion_linea
+            )
+
+        # R4: Incremento de línea (estático o por matriz escalonada de score Prime)
+        if self.params.habilitar_matriz_dinamica:
+            factor_inc = np.select(
+                [df_out["SCORE_COMPORTAMENTAL"] >= 800, df_out["SCORE_COMPORTAMENTAL"] >= 750],
+                [1.35, 1.25],
+                default=1.15
+            )
+            limite_r4 = np.round(df_out["LIMITE_CREDITO_ACTUAL"] * factor_inc, 2)
+        else:
+            limite_r4 = np.round(df_out["LIMITE_CREDITO_ACTUAL"] * self.params.factor_incremento_linea, 2)
+
         # R0: Límite original sin cambios
         limite_r0 = df_out["LIMITE_CREDITO_ACTUAL"]
 

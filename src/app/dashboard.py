@@ -24,6 +24,7 @@ from src.pipeline.feature_engineering import compute_behavioral_features
 from src.engine.rules import PolicyParameters, REASON_CODES, DECISION_NAMES
 from src.engine.strategy_manager import DecisionEngine
 from src.engine.audit import generate_audit_summary
+from src.engine.champion_challenger import ChampionChallengerSimulator
 from src.data_generator import generate_synthetic_portfolio
 
 
@@ -201,6 +202,9 @@ with st.sidebar:
         p_uso_max_exp = st.slider("% Uso máximo para calificar:", 65.0, 90.0, 75.0, 5.0)
         p_factor_incremento = st.slider("Factor incremento de línea:", 1.10, 1.50, 1.25, 0.05)
 
+    with st.expander("Metodología: Matriz Dinámica", expanded=True):
+        p_matriz_dinamica = st.toggle("Activar Matriz por Deciles de Score", value=True, help="Aplica incrementos y reducciones escalonadas según deciles de Score FICO/PowerCurve")
+
     # Objeto de parámetros
     policy_params = PolicyParameters(
         dias_mora_default=p_mora_default,
@@ -215,7 +219,8 @@ with st.sidebar:
         score_prime=p_score_prime,
         uso_min_expansion=p_uso_min_exp,
         uso_max_expansion=p_uso_max_exp,
-        factor_incremento_linea=p_factor_incremento
+        factor_incremento_linea=p_factor_incremento,
+        habilitar_matriz_dinamica=p_matriz_dinamica
     )
 
     st.markdown("---")
@@ -250,11 +255,12 @@ if df_raw is not None:
     audit_summary = generate_audit_summary(df_decisions)
     
     # Tabs principales
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "📊 Resumen Ejecutivo y KPIs",
         "⚙️ Matriz de Transición & Riesgo",
         "🔍 Auditoría 360° de Cuentas",
-        "📁 Tabla de Decisiones & Exportación"
+        "📁 Tabla de Decisiones & Exportación",
+        "🥊 Metodología Champion vs Challenger"
     ])
 
     # ----------------------------------------------------
@@ -512,6 +518,110 @@ if df_raw is not None:
                 mime="application/json",
                 use_container_width=True
             )
+
+    # ----------------------------------------------------
+    # TAB 5: SIMULACIÓN CHAMPION VS CHALLENGER (A/B TESTING)
+    # ----------------------------------------------------
+    with tab5:
+        st.subheader("Experimentación de Políticas: Metodología Champion vs Challenger")
+        st.markdown("""
+        En la ingeniería de motores de decisión, las estrategias de riesgo nunca se reemplazan de forma abrupta.
+        Se emplea la metodología **Champion/Challenger** (A/B Testing crediticio):
+        - **Champion:** Política probada actualmente en producción (línea base).
+        - **Challenger:** Política retadora con nuevos umbrales para evaluar si reduce mora o incrementa ingresos.
+        """)
+
+        col_c_cfg1, col_c_cfg2 = st.columns(2)
+        with col_c_cfg1:
+            st.markdown("#### Configuración de Política Retadora (Challenger)")
+            challenger_preset = st.selectbox(
+                "Seleccionar Escenario Challenger:",
+                [
+                    "Challenger Conservador (Knock-out a 60 días, Score Prime 750)",
+                    "Challenger Expansivo (Score Prime 700, Aumento +35% agresivo)",
+                    "Challenger Anti-Mora (Contención urgente a 20 días mora)"
+                ]
+            )
+
+            if "Conservador" in challenger_preset:
+                p_challenger = PolicyParameters(
+                    dias_mora_default=60,
+                    score_prime=750,
+                    factor_reduccion_linea=0.50,
+                    habilitar_matriz_dinamica=True
+                )
+            elif "Expansivo" in challenger_preset:
+                p_challenger = PolicyParameters(
+                    dias_mora_default=90,
+                    score_prime=700,
+                    factor_incremento_linea=1.35,
+                    uso_max_expansion=85.0,
+                    habilitar_matriz_dinamica=True
+                )
+            else: # Anti-mora
+                p_challenger = PolicyParameters(
+                    dias_mora_default=75,
+                    dias_mora_contencion=20,
+                    uso_linea_critico=90.0,
+                    habilitar_matriz_dinamica=True
+                )
+
+        with col_c_cfg2:
+            st.markdown("#### Distribución de Tráfico A/B")
+            split_pct = st.slider("Asignación de Cartera a Champion (%):", 50, 95, 80, 5)
+            st.write(f"- **Champion:** `{split_pct}%` de la cartera")
+            st.write(f"- **Challenger:** `{100 - split_pct}%` de la cartera")
+
+        simulator = ChampionChallengerSimulator(
+            champion_params=policy_params,
+            challenger_params=p_challenger,
+            split_ratio=split_pct / 100.0
+        )
+
+        df_ab_result, kpis_ab = simulator.simulate_split(df_features)
+
+        st.markdown("---")
+        st.markdown("#### Comparación de Impacto: Champion vs Challenger")
+
+        kpi_col1, kpi_col2, kpi_col3, kpi_col4 = st.columns(4)
+        with kpi_col1:
+            st.metric("Tasa Incremento (Champion)", f"{kpis_ab['tasas_champion']['tasa_aumento_pct']}%")
+        with kpi_col2:
+            st.metric("Tasa Incremento (Challenger)", f"{kpis_ab['tasas_challenger']['tasa_aumento_pct']}%",
+                      delta=f"{kpis_ab['tasas_challenger']['tasa_aumento_pct'] - kpis_ab['tasas_champion']['tasa_aumento_pct']:+.2f}%")
+        with kpi_col3:
+            st.metric("Tasa Contención (Champion)", f"{kpis_ab['tasas_champion']['tasa_bloqueo_pct']}%")
+        with kpi_col4:
+            st.metric("Tasa Contención (Challenger)", f"{kpis_ab['tasas_challenger']['tasa_bloqueo_pct']}%",
+                      delta=f"{kpis_ab['tasas_challenger']['tasa_bloqueo_pct'] - kpis_ab['tasas_champion']['tasa_bloqueo_pct']:+.2f}%", delta_color="inverse")
+
+        # Gráfica comparativa
+        df_comp_chart = pd.DataFrame({
+            "Métrica": ["Aumento Línea", "Mantenimiento", "Reducción", "Bloqueo Mora", "Cancelación Default"],
+            "Champion (%)": [
+                kpis_ab['tasas_champion']['tasa_aumento_pct'],
+                kpis_ab['tasas_champion']['tasa_mantenimiento_pct'],
+                kpis_ab['tasas_champion']['tasa_reduccion_pct'],
+                kpis_ab['tasas_champion']['tasa_bloqueo_pct'],
+                kpis_ab['tasas_champion']['tasa_cancelacion_pct']
+            ],
+            "Challenger (%)": [
+                kpis_ab['tasas_challenger']['tasa_aumento_pct'],
+                kpis_ab['tasas_challenger']['tasa_mantenimiento_pct'],
+                kpis_ab['tasas_challenger']['tasa_reduccion_pct'],
+                kpis_ab['tasas_challenger']['tasa_bloqueo_pct'],
+                kpis_ab['tasas_challenger']['tasa_cancelacion_pct']
+            ]
+        })
+
+        fig_ab = go.Figure(data=[
+            go.Bar(name='Champion (Línea Base)', x=df_comp_chart["Métrica"], y=df_comp_chart["Champion (%)"], marker_color='#3b82f6'),
+            go.Bar(name='Challenger (Retadora)', x=df_comp_chart["Métrica"], y=df_comp_chart["Challenger (%)"], marker_color='#8b5cf6')
+        ])
+        fig_ab.update_layout(barmode='group', height=360, margin=dict(t=20, b=20, l=20, r=20), yaxis_title="% de Cartera")
+        st.plotly_chart(fig_ab, use_container_width=True)
+
+        st.info("💡 **Conclusión Metodológica para Comités:** Si la estrategia Challenger demuestra mitigar mayor volumen de riesgo sin sacrificar la rentabilidad de clientes Prime durante el periodo de prueba, el comité puede promover formalmente el Challenger a nuevo Champion.")
 
 else:
     st.warning("No se ha cargado ninguna cartera crediticia. Seleccione una fuente en la barra lateral.")

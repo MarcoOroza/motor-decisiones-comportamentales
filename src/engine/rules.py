@@ -36,6 +36,9 @@ class PolicyParameters:
     antiguedad_min_meses: int = 12
     factor_incremento_linea: float = 1.25
 
+    # Metodología Avanzada: Matriz Bidimensional de Dimensionamiento
+    habilitar_matriz_dinamica: bool = False
+
 
 # Códigos de Razón y Explicabilidad
 REASON_CODES = {

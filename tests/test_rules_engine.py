@@ -192,3 +192,44 @@ def test_audit_summary_generation(engine):
     assert audit["metricas_financieras"]["limite_vigente_total_mxn"] == 90000.0
     assert audit["metricas_financieras"]["nuevo_limite_total_mxn"] == 50000.0
     assert audit["metricas_financieras"]["delta_exposicion_neta_mxn"] == -40000.0
+
+
+def test_dynamic_matrix_sizing():
+    """Prueba de la nueva Metodología: Matriz Bidimensional de Límites por Deciles."""
+    params_matriz = PolicyParameters(habilitar_matriz_dinamica=True)
+    engine_matriz = DecisionEngine(params_matriz)
+
+    # Cliente Super Prime (Score >= 800) -> Factor +35%
+    df_super_prime = make_single_account_df(
+        SCORE_COMPORTAMENTAL=810, LIMITE_CREDITO_ACTUAL=100000.0, SALDO_ACTUAL=50000.0
+    )
+    res_sp = engine_matriz.process_portfolio(df_super_prime)
+    assert res_sp.iloc[0]["NUEVO_LIMITE_CREDITO"] == 135000.0
+
+    # Cliente Prime Estándar (Score 730) -> Factor +15%
+    df_mid_prime = make_single_account_df(
+        SCORE_COMPORTAMENTAL=730, LIMITE_CREDITO_ACTUAL=100000.0, SALDO_ACTUAL=50000.0
+    )
+    res_mp = engine_matriz.process_portfolio(df_mid_prime)
+    assert res_mp.iloc[0]["NUEVO_LIMITE_CREDITO"] == 115000.0
+
+
+def test_champion_challenger_simulation():
+    """Prueba de la Metodología Champion vs Challenger (A/B Testing de Políticas)."""
+    from src.engine.champion_challenger import ChampionChallengerSimulator
+
+    p_champ = PolicyParameters(score_prime=720, dias_mora_default=90)
+    p_chall = PolicyParameters(score_prime=750, dias_mora_default=60) # Política más conservadora
+
+    sim = ChampionChallengerSimulator(p_champ, p_chall, split_ratio=0.50)
+
+    # Crear muestra balanceada
+    df_p = make_single_account_df(SCORE_COMPORTAMENTAL=730, LIMITE_CREDITO_ACTUAL=50000.0, SALDO_ACTUAL=25000.0)
+    df_sample = pd.concat([df_p] * 10, ignore_index=True)
+
+    df_res, kpis = sim.simulate_split(df_sample)
+
+    assert "ESTRATEGIA_ASIGNADA" in df_res.columns
+    assert kpis["muestras"]["cuentas_champion"] + kpis["muestras"]["cuentas_challenger"] == 10
+    assert "tasas_champion" in kpis and "tasas_challenger" in kpis
+
