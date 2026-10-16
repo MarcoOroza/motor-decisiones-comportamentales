@@ -28,8 +28,9 @@ from src.engine.champion_challenger import ChampionChallengerSimulator
 from src.data_generator import generate_synthetic_portfolio
 
 
-
-# Configuración de página
+# -----------------------------------------------------------------------------
+# CONFIGURACIÓN DE PÁGINA
+# -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="PowerCurve Behavioral Engine | TESE Informática",
     page_icon="💳",
@@ -37,120 +38,236 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos CSS personalizados para estética bancaria de alta calidad
+# -----------------------------------------------------------------------------
+# SISTEMA DE DISEÑO Y ESTILOS CSS FINTECH DE ALTA FIDELIDAD
+# -----------------------------------------------------------------------------
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #1e293b;
+    }
+
+    /* Ocultar barra superior genérica de Streamlit para look corporativo */
+    header[data-testid="stHeader"] {
+        background: transparent;
     }
     
+    /* ENCABEZADO PRINCIPAL FINTECH */
     .main-header {
-        background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 50%, #003566 100%);
-        padding: 1.8rem 2rem;
-        border-radius: 14px;
+        background: radial-gradient(circle at 10% 20%, #0f172a 0%, #1e293b 90%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 2.2rem 2.4rem;
+        border-radius: 20px;
         color: #ffffff;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 8px 24px rgba(0, 53, 102, 0.2);
+        margin-bottom: 2rem;
+        box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.4), 0 0 25px rgba(56, 189, 248, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    .main-header::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
     }
     
+    /* BADGES INSTITUCIONALES */
     .badge-tese {
-        background: #0077b6;
-        color: #ffffff;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
+        background: rgba(14, 165, 233, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        padding: 5px 12px;
+        border-radius: 30px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.6px;
         display: inline-block;
         margin-right: 8px;
+        backdrop-filter: blur(4px);
     }
-    
     .badge-collab {
-        background: #00b4d8;
-        color: #0d1b2a;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.3);
+        padding: 5px 12px;
+        border-radius: 30px;
+        font-size: 0.76rem;
         font-weight: 700;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
         display: inline-block;
+        backdrop-filter: blur(4px);
     }
     
-    .kpi-card {
+    /* TARJETAS KPI FINTECH MODERNAS */
+    .kpi-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.2rem;
+        margin-bottom: 2rem;
+    }
+    .kpi-card-lux {
         background: #ffffff;
         border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.4rem 1.5rem;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+    .kpi-card-lux:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.1);
+        border-color: #cbd5e1;
+    }
+    .kpi-icon-wrapper {
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
-        padding: 1.2rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        transition: transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 0.9rem;
     }
-    .kpi-card:hover {
-        transform: translateY(-2px);
-    }
-    .kpi-title {
+    .kpi-label {
         color: #64748b;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
     }
-    .kpi-value {
-        font-size: 1.7rem;
-        font-weight: 700;
+    .kpi-big-value {
+        font-size: 1.85rem;
+        font-weight: 800;
         color: #0f172a;
-        margin: 0.3rem 0;
+        margin: 0.2rem 0;
+        letter-spacing: -0.5px;
     }
-    .kpi-delta-pos {
+    .kpi-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-size: 0.76rem;
+        font-weight: 700;
+    }
+    .kpi-pill-pos {
+        background: #ecfdf5;
         color: #059669;
-        font-weight: 600;
-        font-size: 0.85rem;
+        border: 1px solid #a7f3d0;
     }
-    .kpi-delta-neg {
+    .kpi-pill-neg {
+        background: #fef2f2;
         color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+    .kpi-pill-neutral {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    /* PESTAÑAS (TABS) MODERNIZADAS TIPO SEGMENTED CONTROL */
+    div[data-testid="stTabs"] {
+        margin-top: 0.5rem;
+    }
+    div[data-testid="stTabs"] [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #f1f5f9;
+        padding: 6px;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+    }
+    div[data-testid="stTabs"] [data-baseweb="tab"] {
+        border-radius: 10px;
+        padding: 9px 18px;
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.88rem;
+        color: #64748b;
+        background-color: transparent;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    div[data-testid="stTabs"] [data-baseweb="tab"]:hover {
+        color: #0f172a;
+        background-color: rgba(255, 255, 255, 0.6);
+    }
+    div[data-testid="stTabs"] [aria-selected="true"] {
+        background: #0f172a !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
     }
     
-    .decision-badge-r4 { background-color: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
-    .decision-badge-r0 { background-color: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
-    .decision-badge-r3 { background-color: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
-    .decision-badge-r2 { background-color: #ffedd5; color: #9a3412; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
-    .decision-badge-r1 { background-color: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+    /* BADGES DE DECISIONES CREDITICIAS */
+    .badge-decision {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.76rem;
+        letter-spacing: 0.3px;
+    }
+    .dec-r4 { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .dec-r0 { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .dec-r3 { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .dec-r2 { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+    .dec-r1 { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* CARD DE AUDITORÍA Y PERFIL */
+    .dossier-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+        margin-bottom: 1.5rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Encabezado institucional
+# -----------------------------------------------------------------------------
+# ENCABEZADO INSTITUCIONAL
+# -----------------------------------------------------------------------------
 st.markdown("""
 <div class="main-header">
-    <div style="margin-bottom: 0.6rem;">
-        <span class="badge-tese">TESE • DIVISIÓN DE INFORMÁTICA</span>
-        <span class="badge-collab">MOTOR COMPORTAMENTAL • RIESGO DE CRÉDITO</span>
+    <div style="margin-bottom: 0.8rem;">
+        <span class="badge-tese">TECNOLÓGICO DE ESTUDIOS SUPERIORES DE ECATEPEC</span>
+        <span class="badge-collab">DIVISIÓN DE INFORMÁTICA • RESIDENCIA PROFESIONAL</span>
     </div>
-    <h1 style="margin: 0; font-size: 2.1rem; font-weight: 700;">Plataforma de Decisiones Comportamentales</h1>
-    <p style="margin: 0.4rem 0 0 0; color: #94a3b8; font-size: 0.95rem;">
-        Simulador de Políticas de Riesgo y Mantenimiento de Cartera Crediticia (Arquitectura Tipo Experian PowerCurve)
+    <h1 style="margin: 0; font-size: 2.3rem; font-weight: 800; letter-spacing: -0.6px; line-height: 1.2;">
+        Motor de Decisiones Comportamentales
+    </h1>
+    <p style="margin: 0.5rem 0 0 0; color: #94a3b8; font-size: 1.05rem; font-weight: 400; max-width: 850px;">
+        Plataforma analítica para administración estratégica de cartera crediticia, evaluación multicriterio y experimentación Champion/Challenger (Arquitectura basada en Experian PowerCurve).
     </p>
-    <div style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.15); display: flex; justify-content: space-between; font-size: 0.85rem; color: #cbd5e1;">
-        <span>👨‍💻 <strong>Residente / Autor:</strong> Marco Antonio Oroza Ortega</span>
-        <span>🏛️ <strong>Tecnológico de Estudios Superiores de Ecatepec (TESE)</strong></span>
+    <div style="margin-top: 1.4rem; padding-top: 0.9rem; border-top: 1px solid rgba(255,255,255,0.12); display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; color: #cbd5e1;">
+        <div>👨‍💻 <strong>Autor / Residente:</strong> Marco Antonio Oroza Ortega &nbsp;•&nbsp; <strong>Carrera:</strong> Informática</div>
+        <div>🏛️ <strong>TESE</strong> &nbsp;•&nbsp; Versión Funcional Fase 2</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 
-# ==========================================
-# BARRA LATERAL: CONTROL DE ESTRATEGIAS
-# ==========================================
+# =============================================================================
+# BARRA LATERAL: CONTROL DE ESTRATEGIAS Y PARÁMETROS
+# =============================================================================
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/bank-building.png", width=56)
-    st.subheader("Gestión de Estrategia (Strategy Design)")
+    st.markdown("### ⚙️ Centro de Estrategia")
+    st.caption("Configuración paramétrica del motor tipo PowerCurve")
     
-    st.markdown("### 1. Ingesta de Cartera")
+    st.markdown("#### 1. Ingesta de Cartera")
     data_source = st.radio(
-        "Fuente de datos:",
-        ["Cartera Sintética Precargada (2,500 Cuentas)", "Cargar Archivo CSV Externo", "Regenerar Nueva Cartera Sintética"],
+        "Origen de datos:",
+        ["Cartera Sintética Precargada (2,500 Cuentas)", "Cargar Archivo CSV Externo", "Regenerar Nueva Cartera"],
         index=0
     )
 
@@ -165,47 +282,51 @@ with st.sidebar:
             df_raw = pd.read_csv(data_path)
             
     elif data_source == "Cargar Archivo CSV Externo":
-        uploaded_file = st.file_uploader("Selecciona el archivo CSV de cartera:", type=["csv"])
+        uploaded_file = st.file_uploader("Subir dataset estructurado (.csv):", type=["csv"])
         if uploaded_file is not None:
             df_raw = pd.read_csv(uploaded_file)
         else:
-            st.info("Sube un archivo para comenzar o selecciona la cartera precargada.")
+            st.info("Sube un archivo para procesar o selecciona la cartera precargada.")
             
     else: # Regenerar
-        n_sim = st.slider("Tamaño de muestra a generar:", 500, 10000, 3000, step=500)
-        seed_sim = st.number_input("Semilla aleatoria:", min_value=1, value=123)
-        if st.button("Generar Nueva Muestra", use_container_width=True):
+        n_sim = st.slider("Tamaño de muestra sintética:", 500, 10000, 2500, step=500)
+        seed_sim = st.number_input("Semilla pseudoaleatoria:", min_value=1, value=42)
+        if st.button("Generar Nueva Población", use_container_width=True):
             df_raw = generate_synthetic_portfolio(n_sim, random_seed=int(seed_sim))
             st.success(f"Generadas {n_sim} cuentas.")
 
     st.markdown("---")
-    st.markdown("### 2. Parametrización de Políticas (Cut-offs)")
+    st.markdown("#### 2. Umbrales de Políticas (Cut-offs)")
     
-    with st.expander("Regla 1: Knock-Out Severo", expanded=False):
-        p_mora_default = st.slider("Días mora Default (IFRS 9):", 60, 180, 90, 5)
-        p_mora_reestructura = st.slider("Días mora en Reestructura:", 15, 60, 30, 5)
+    with st.expander("🛡️ Regla 1: Knock-Out Severo", expanded=False):
+        p_mora_default = st.slider("Días mora Default (IFRS 9 / Basilea):", 60, 180, 90, 5)
+        p_mora_reestructura = st.slider("Días mora con Reestructura:", 15, 60, 30, 5)
 
-    with st.expander("Regla 2: Contención Inmediata", expanded=False):
+    with st.expander("⚠️ Regla 2: Contención Inmediata", expanded=False):
         p_mora_contencion = st.slider("Días mora para Roll-forward:", 15, 60, 30, 5)
         p_uso_critico = st.slider("% Uso crítico para congelar:", 85.0, 110.0, 95.0, 1.0)
         p_mora_critica = st.slider("Días mora con uso crítico:", 5, 30, 15, 1)
 
-    with st.expander("Regla 3: Mitigación Preventiva", expanded=False):
+    with st.expander("📉 Regla 3: Mitigación Preventiva", expanded=False):
         p_score_subprime = st.slider("Score Subprime de alerta:", 450, 650, 580, 10)
         p_uso_fatiga = st.slider("% Uso línea para fatiga:", 70.0, 95.0, 80.0, 5.0)
         p_minimos_alerta = st.slider("Pagos mínimos consecutivos:", 2, 8, 4, 1)
         p_factor_reduccion = st.slider("Factor de nueva línea (% del cupo):", 0.40, 0.80, 0.60, 0.05)
 
-    with st.expander("Regla 4: Expansión Proactiva", expanded=False):
+    with st.expander("🚀 Regla 4: Expansión Proactiva", expanded=False):
         p_score_prime = st.slider("Score Prime mínimo:", 680, 800, 720, 10)
-        p_uso_min_exp = st.slider("% Uso mínimo para calificar:", 20.0, 50.0, 40.0, 5.0)
-        p_uso_max_exp = st.slider("% Uso máximo para calificar:", 65.0, 90.0, 75.0, 5.0)
-        p_factor_incremento = st.slider("Factor incremento de línea:", 1.10, 1.50, 1.25, 0.05)
+        p_uso_min_exp = st.slider("% Uso mínimo requerido:", 20.0, 50.0, 40.0, 5.0)
+        p_uso_max_exp = st.slider("% Uso máximo admisible:", 65.0, 90.0, 75.0, 5.0)
+        p_factor_incremento = st.slider("Factor base de incremento:", 1.10, 1.50, 1.25, 0.05)
 
-    with st.expander("Metodología: Matriz Dinámica", expanded=True):
-        p_matriz_dinamica = st.toggle("Activar Matriz por Deciles de Score", value=True, help="Aplica incrementos y reducciones escalonadas según deciles de Score FICO/PowerCurve")
+    with st.expander("📐 Metodología: Matriz Dinámica", expanded=True):
+        p_matriz_dinamica = st.toggle(
+            "Activar Matriz por Deciles",
+            value=True,
+            help="Aplica incrementos (+35%, +25%, +15%) y reducciones (-50%, -35%) escalonadas según deciles de Score"
+        )
 
-    # Objeto de parámetros
+    # Construcción de parámetros
     policy_params = PolicyParameters(
         dias_mora_default=p_mora_default,
         dias_mora_reestructura=p_mora_reestructura,
@@ -224,88 +345,105 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    btn_ejecutar = st.button("🚀 Ejecutar Motor de Decisiones", type="primary", use_container_width=True)
-
-    st.markdown("---")
     st.markdown("""
-    <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font-size: 0.82rem; color: #334155;">
-        <div style="font-weight: 700; color: #0f172a; font-size: 0.9rem;">Marco Antonio Oroza Ortega</div>
-        <div style="color: #475569; margin-top: 2px;">Proyecto de Residencia Profesional</div>
-        <div style="color: #0284c7; font-weight: 600; font-size: 0.78rem;">División de Informática • TESE</div>
-        <div style="color: #64748b; font-size: 0.75rem;">Simulación de Motor de Riesgo</div>
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; font-size: 0.82rem; color: #334155;">
+        <div style="font-weight: 700; color: #0f172a; font-size: 0.92rem;">Marco Antonio Oroza Ortega</div>
+        <div style="color: #475569; margin: 2px 0;">Proyecto de Residencia Profesional</div>
+        <div style="color: #0284c7; font-weight: 600; font-size: 0.79rem;">División de Informática • TESE</div>
     </div>
     """, unsafe_allow_html=True)
 
 
-# ==========================================
-# LÓGICA DE PROCESAMIENTO
-# ==========================================
+# =============================================================================
+# MOTOR DE PROCESAMIENTO
+# =============================================================================
 if df_raw is not None:
-    # 1. Validación de esquema
+    # 1. Validación de esquema Pydantic
     df_clean, validation_warnings = validate_portfolio_df(df_raw)
     
-    # 2. Pipeline de variables comportamentales
+    # 2. Pipeline vectorial de variables comportamentales
     df_features = compute_behavioral_features(df_clean)
     
-    # 3. Ejecución del motor
+    # 3. Orquestador de prelación jerárquica
     engine = DecisionEngine(policy_params)
     df_decisions = engine.process_portfolio(df_features)
     
-    # 4. Auditoría consolidada
+    # 4. Auditoría y métricas consolidadas
     audit_summary = generate_audit_summary(df_decisions)
     
-    # Tabs principales
+    # -------------------------------------------------------------------------
+    # TABS PRINCIPALES CON EXPERIMENTACIÓN METODOLÓGICA
+    # -------------------------------------------------------------------------
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "📊 Resumen Ejecutivo y KPIs",
         "⚙️ Matriz de Transición & Riesgo",
-        "🔍 Auditoría 360° de Cuentas",
-        "📁 Tabla de Decisiones & Exportación",
+        "🔍 Expediente y Auditoría 360°",
+        "📁 Cartera Decidida & Logs",
         "🥊 Metodología Champion vs Challenger"
     ])
 
-    # ----------------------------------------------------
-    # TAB 1: RESUMEN EJECUTIVO Y KPIS
-    # ----------------------------------------------------
+    # Paleta de colores institucional fintech
+    color_map = {
+        "INCREMENTAR_LINEA_PROACTIVO": "#10b981",    # Emerald
+        "MANTENER_CONDICIONES_ACTUALES": "#3b82f6",  # Indigo
+        "REDUCIR_LINEA_PREVENTIVA": "#f59e0b",       # Amber
+        "BLOQUEO_TEMPORAL_LINEA": "#f97316",         # Orange
+        "CANCELAR_LINEA_Y_ENVIO_COBRANZA": "#ef4444" # Rose
+    }
+
+    # -------------------------------------------------------------------------
+    # TAB 1: RESUMEN EJECUTIVO Y KPIS FINANCIEROS
+    # -------------------------------------------------------------------------
     with tab1:
-        st.subheader("Métricas de Impacto en Cartera Crediticia")
-        
-        # Tarjetas KPI
-        col1, col2, col3, col4 = st.columns(4)
-        
         total_cuentas = audit_summary["total_cuentas_procesadas"]
         limite_previo = audit_summary["metricas_financieras"]["limite_vigente_total_mxn"]
         nuevo_limite = audit_summary["metricas_financieras"]["nuevo_limite_total_mxn"]
         delta_neto = audit_summary["metricas_financieras"]["delta_exposicion_neta_mxn"]
         pct_delta = audit_summary["metricas_financieras"]["porcentaje_variacion_linea"]
-        
-        with col1:
-            st.metric("Total Cuentas Evaluadas", f"{total_cuentas:,}")
-        with col2:
-            st.metric("Límite Vigente Previo", f"${limite_previo:,.2f} MXN")
-        with col3:
-            st.metric("Nuevo Límite Autorizado", f"${nuevo_limite:,.2f} MXN")
-        with col4:
-            delta_label = f"{pct_delta:+.2f}%"
-            st.metric("Variación Neta de Exposición", f"${delta_neto:+,.2f} MXN", delta=delta_label)
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Gráficas ejecutivas
+        # Tarjetas KPI Estilizadas en HTML
+        pill_class = "kpi-pill-pos" if delta_neto >= 0 else "kpi-pill-neg"
+        pill_arrow = "▲" if delta_neto >= 0 else "▼"
+
+        st.markdown(f"""
+        <div class="kpi-container">
+            <div class="kpi-card-lux">
+                <div class="kpi-icon-wrapper" style="background: #e0f2fe; color: #0284c7;">👥</div>
+                <div class="kpi-label">Cartera Evaluada</div>
+                <div class="kpi-big-value">{total_cuentas:,}</div>
+                <div class="kpi-pill kpi-pill-neutral">100% de contratos auditados</div>
+            </div>
+            <div class="kpi-card-lux">
+                <div class="kpi-icon-wrapper" style="background: #f1f5f9; color: #475569;">💳</div>
+                <div class="kpi-label">Límite Vigente Previo</div>
+                <div class="kpi-big-value">${limite_previo:,.0f} <span style="font-size:0.9rem;font-weight:500;color:#64748b;">MXN</span></div>
+                <div class="kpi-pill kpi-pill-neutral">Exposición contractual base</div>
+            </div>
+            <div class="kpi-card-lux">
+                <div class="kpi-icon-wrapper" style="background: #ede9fe; color: #7c3aed;">🏦</div>
+                <div class="kpi-label">Nuevo Límite Autorizado</div>
+                <div class="kpi-big-value">${nuevo_limite:,.0f} <span style="font-size:0.9rem;font-weight:500;color:#64748b;">MXN</span></div>
+                <div class="kpi-pill kpi-pill-neutral">Asignación tras políticas</div>
+            </div>
+            <div class="kpi-card-lux">
+                <div class="kpi-icon-wrapper" style="background: {'#ecfdf5' if delta_neto >= 0 else '#fef2f2'}; color: {'#059669' if delta_neto >= 0 else '#dc2626'};">
+                    {'📈' if delta_neto >= 0 else '📉'}
+                </div>
+                <div class="kpi-label">Variación Neta de Exposición</div>
+                <div class="kpi-big-value" style="color: {'#059669' if delta_neto >= 0 else '#dc2626'};">
+                    ${delta_neto:+,.0f} <span style="font-size:0.9rem;font-weight:500;">MXN</span>
+                </div>
+                <div class="kpi-pill {pill_class}">{pill_arrow} {pct_delta:+.2f}% de variación</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
         chart_col1, chart_col2 = st.columns([1, 1])
         
         with chart_col1:
-            st.markdown("#### Distribución de Decisiones Tácticas")
+            st.markdown("#### 🍩 Distribución de Decisiones Tácticas")
             df_dist = df_decisions["DECISION_FINAL"].value_counts().reset_index()
             df_dist.columns = ["Decisión", "Cuentas"]
-            
-            # Paleta de colores estandarizada
-            color_map = {
-                "INCREMENTAR_LINEA_PROACTIVO": "#10b981",
-                "MANTENER_CONDICIONES_ACTUALES": "#3b82f6",
-                "REDUCIR_LINEA_PREVENTIVA": "#f59e0b",
-                "BLOQUEO_TEMPORAL_LINEA": "#f97316",
-                "CANCELAR_LINEA_Y_ENVIO_COBRANZA": "#ef4444"
-            }
             
             fig_pie = px.pie(
                 df_dist,
@@ -313,14 +451,23 @@ if df_raw is not None:
                 values="Cuentas",
                 color="Decisión",
                 color_discrete_map=color_map,
-                hole=0.45
+                hole=0.55
             )
-            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-            fig_pie.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=340, showlegend=False)
+            fig_pie.update_traces(
+                textposition='inside',
+                textinfo='percent+label',
+                marker=dict(line=dict(color='#ffffff', width=2))
+            )
+            fig_pie.update_layout(
+                margin=dict(t=10, b=10, l=10, r=10),
+                height=350,
+                font=dict(family='Plus Jakarta Sans', size=12),
+                showlegend=False
+            )
             st.plotly_chart(fig_pie, use_container_width=True)
 
         with chart_col2:
-            st.markdown("#### Impacto Monetario Neto por Decisión (MXN)")
+            st.markdown("#### 📊 Impacto Financiero Neto por Segmento (MXN)")
             df_impact = df_decisions.groupby("DECISION_FINAL")["DELTA_EXPOSICION"].sum().reset_index()
             df_impact.columns = ["Decisión", "Delta_MXN"]
             
@@ -334,17 +481,17 @@ if df_raw is not None:
             )
             fig_bar.update_layout(
                 margin=dict(t=10, b=10, l=10, r=10),
-                height=340,
+                height=350,
                 xaxis_title="",
                 yaxis_title="Variación Neta (MXN)",
+                font=dict(family='Plus Jakarta Sans', size=11),
                 showlegend=False
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
         st.markdown("---")
-        st.markdown("#### Segmentación Multidimensional: Score Comportamental vs Utilización de Línea")
+        st.markdown("#### 🎯 Mapa de Dispersión Estratégico: Score vs Utilización de Línea")
         
-        # Muestra de puntos para optimizar render interactivo si el dataset es grande
         sample_size = min(1500, len(df_decisions))
         df_scatter = df_decisions.sample(sample_size, random_state=42)
         
@@ -355,23 +502,27 @@ if df_raw is not None:
             color="DECISION_FINAL",
             color_discrete_map=color_map,
             hover_data=["ID_CLIENTE", "DIAS_ATRASO_M1", "LIMITE_CREDITO_ACTUAL", "NUEVO_LIMITE_CREDITO", "CODIGO_RAZON"],
-            labels={"SCORE_COMPORTAMENTAL": "Score Comportamental Interno", "PORC_USO_LINEA": "% Utilización de Línea"},
+            labels={"SCORE_COMPORTAMENTAL": "Score Comportamental Interno (FICO)", "PORC_USO_LINEA": "% Utilización de Línea"},
             opacity=0.75
         )
-        fig_scatter.add_hline(y=100.0, line_dash="dash", line_color="red", annotation_text="Límite Máximo de Línea (100%)")
-        fig_scatter.update_layout(height=450, margin=dict(t=20, b=20, l=20, r=20), legend_title_text="Decisión Asignada")
+        fig_scatter.add_hline(y=100.0, line_dash="dash", line_color="#ef4444", annotation_text="Límite Máximo (100%)", annotation_position="top right")
+        fig_scatter.update_layout(
+            height=460,
+            margin=dict(t=20, b=20, l=20, r=20),
+            font=dict(family='Plus Jakarta Sans', size=11),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
         st.plotly_chart(fig_scatter, use_container_width=True)
 
-    # ----------------------------------------------------
-    # TAB 2: MATRIZ DE TRANSICIÓN Y RIESGO
-    # ----------------------------------------------------
+    # -------------------------------------------------------------------------
+    # TAB 2: MATRIZ DE TRANSICIÓN Y ROLL RATES
+    # -------------------------------------------------------------------------
     with tab2:
-        st.subheader("Análisis Dinámico de Cartera y Roll Rates")
+        st.subheader("Dinámica Intermensual de Morosidad (Roll Rates)")
         
         col_t1, col_t2 = st.columns(2)
-        
         with col_t1:
-            st.markdown("#### Distribución de Estatus Operativo de la Tarjeta")
+            st.markdown("#### Estatus Operativo Resultante de la Cuenta")
             df_estatus = df_decisions["ESTATUS_RESULTANTE"].value_counts().reset_index()
             df_estatus.columns = ["Estatus", "Cuentas"]
             fig_estatus = px.bar(
@@ -380,13 +531,13 @@ if df_raw is not None:
                 y="Estatus",
                 orientation="h",
                 color="Estatus",
-                color_discrete_sequence=px.colors.qualitative.Safe
+                color_discrete_sequence=["#10b981", "#3b82f6", "#f59e0b", "#f97316", "#ef4444"]
             )
-            fig_estatus.update_layout(height=320, margin=dict(t=10, b=10, l=10, r=10), showlegend=False)
+            fig_estatus.update_layout(height=320, margin=dict(t=10, b=10, l=10, r=10), font=dict(family='Plus Jakarta Sans'), showlegend=False)
             st.plotly_chart(fig_estatus, use_container_width=True)
 
         with col_t2:
-            st.markdown("#### Explicabilidad: Distribución de Reason Codes")
+            st.markdown("#### Explicabilidad Algorítmica: Códigos de Razón (Reason Codes)")
             df_rc = df_decisions["CODIGO_RAZON"].value_counts().reset_index()
             df_rc.columns = ["Código de Razón", "Ocurrencias"]
             fig_rc = px.bar(
@@ -397,13 +548,12 @@ if df_raw is not None:
                 color="Código de Razón",
                 color_discrete_sequence=px.colors.qualitative.Prism
             )
-            fig_rc.update_layout(height=320, margin=dict(t=10, b=10, l=10, r=10), showlegend=False)
+            fig_rc.update_layout(height=320, margin=dict(t=10, b=10, l=10, r=10), font=dict(family='Plus Jakarta Sans'), showlegend=False)
             st.plotly_chart(fig_rc, use_container_width=True)
 
         st.markdown("---")
-        st.markdown("#### Matriz de Transición de Morosidad (Mes t-2 vs Mes t-1)")
+        st.markdown("#### Matriz de Transición de Mora (Mes t-2 ➔ Mes t-1)")
         
-        # Categorizar cubos de mora
         def get_bucket(days):
             if days == 0: return "Cero Mora"
             elif days <= 30: return "1-30 Días"
@@ -423,66 +573,124 @@ if df_raw is not None:
             labels=dict(x="Morosidad Mes Actual (M1)", y="Morosidad Mes Anterior (M2)", color="Cuentas"),
             color_continuous_scale="Blues"
         )
-        fig_heat.update_layout(height=380, margin=dict(t=20, b=20, l=20, r=20))
+        fig_heat.update_layout(height=390, margin=dict(t=20, b=20, l=20, r=20), font=dict(family='Plus Jakarta Sans'))
         st.plotly_chart(fig_heat, use_container_width=True)
 
-    # ----------------------------------------------------
-    # TAB 3: AUDITORÍA 360° DE CUENTAS (CASE REVIEW)
-    # ----------------------------------------------------
+    # -------------------------------------------------------------------------
+    # TAB 3: EXPEDIENTE Y AUDITORÍA 360° (CASE REVIEW DE ALTO NIVEL)
+    # -------------------------------------------------------------------------
     with tab3:
-        st.subheader("Inspección Detallada de Cuenta Individual")
+        st.subheader("Auditoría Individual de Cuenta (Expediente de Riesgo 360°)")
         
         cuenta_ids = df_decisions["ID_CLIENTE"].tolist()
         col_sel1, col_sel2 = st.columns([2, 1])
         with col_sel1:
-            selected_client = st.selectbox("Seleccione el ID de Cliente a auditar:", cuenta_ids, index=0)
+            selected_client = st.selectbox("Seleccionar Identificador de Cliente para Inspección:", cuenta_ids, index=0)
             
         row = df_decisions[df_decisions["ID_CLIENTE"] == selected_client].iloc[0]
         
-        # Resumen de Decisión para la cuenta seleccionada
-        col_c1, col_c2, col_c3, col_c4 = st.columns(4)
-        with col_c1:
-            st.markdown(f"**Decisión Final:**  \n`{row['DECISION_FINAL']}`")
-        with col_c2:
-            st.markdown(f"**Regla Detonada:**  \n`{row['REGLA_DISPARADA']}`")
-        with col_c3:
-            st.markdown(f"**Código de Razón:**  \n`{row['CODIGO_RAZON']}`")
-        with col_c4:
-            st.markdown(f"**Estatus de Tarjeta:**  \n`{row['ESTATUS_RESULTANTE']}`")
+        # Color del badge según la regla
+        badge_class = "dec-r0"
+        if row["REGLA_DISPARADA"] == "R4_EXPANSION": badge_class = "dec-r4"
+        elif row["REGLA_DISPARADA"] == "R3_MITIGACION": badge_class = "dec-r3"
+        elif row["REGLA_DISPARADA"] == "R2_CONTENCION": badge_class = "dec-r2"
+        elif row["REGLA_DISPARADA"] == "R1_KNOCKOUT": badge_class = "dec-r1"
 
-        st.markdown("---")
-        
-        col_info1, col_info2 = st.columns(2)
-        with col_info1:
-            st.markdown("#### Datos de Línea y Financieros")
-            st.write(f"- **Contrato:** `{row['ID_CONTRATO']}`")
-            st.write(f"- **Línea Previa:** `${row['LIMITE_CREDITO_ACTUAL']:,.2f} MXN`")
-            st.write(f"- **Saldo Actual Insoluto:** `${row['SALDO_ACTUAL']:,.2f} MXN`")
-            st.write(f"- **Porcentaje de Uso:** `{row['PORC_USO_LINEA']:.2f}%`")
-            st.write(f"- **Nuevo Límite Autorizado:** `${row['NUEVO_LIMITE_CREDITO']:,.2f} MXN`")
-            st.write(f"- **Delta de Exposición:** `${row['DELTA_EXPOSICION']:+,.2f} MXN`")
+        # Banner de veredicto
+        st.markdown(f"""
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span class="badge-decision {badge_class}" style="font-size: 0.85rem; padding: 6px 14px;">{row['DECISION_FINAL']}</span>
+                <span style="margin-left: 10px; font-weight: 600; color: #475569;">Gatillo: <code>{row['REGLA_DISPARADA']}</code></span>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 0.85rem; color: #64748b;">Código de Razón:</span>
+                <code style="background: #e2e8f0; color: #0f172a; padding: 4px 8px; border-radius: 6px; font-weight: 600;">{row['CODIGO_RAZON']}</code>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        with col_info2:
-            st.markdown("#### Vector de Comportamiento Crediticio")
-            st.write(f"- **Score Comportamental:** `{int(row['SCORE_COMPORTAMENTAL'])} pts` ({row['SEGMENTO_SCORE']})")
-            st.write(f"- **Días de Atraso M1 (Último mes):** `{int(row['DIAS_ATRASO_M1'])} días`")
-            st.write(f"- **Días de Atraso M2 (Hace 2 meses):** `{int(row['DIAS_ATRASO_M2'])} días`")
-            st.write(f"- **Días de Atraso M3 (Hace 3 meses):** `{int(row['DIAS_ATRASO_M3'])} días`")
-            st.write(f"- **Pagos Mínimos Consecutivos:** `{int(row['PAGOS_MINIMOS_CONSECUTIVOS'])}`")
-            st.write(f"- **Sobregiros últimos 6 meses:** `{int(row['NUM_SOBREGIROS_U6M'])}`")
-            st.write(f"- **Antigüedad del Contrato:** `{int(row['ANTIGUEDAD_CUENTA_MESES'])} meses`")
-            st.write(f"- **Reestructura Previa Activa:** `{'SÍ' if row['FLAG_REESTRUCTURA_PREVIA'] == 1 else 'NO'}`")
+        col_d1, col_d2 = st.columns([1, 1])
 
-        # Explicabilidad didáctica para el evaluador
-        st.info(f"💡 **Justificación Técnica de la Decisión:** El acreditado `{row['ID_CLIENTE']}` fue evaluado bajo el árbol de prelación jerárquica. La primera política satisfecha fue `{row['REGLA_DISPARADA']}`, asignándole la acción `{row['DECISION_FINAL']}` y emitiendo el código de razón `{row['CODIGO_RAZON']}`.")
+        with col_d1:
+            st.markdown("#### Velocímetro de Score Comportamental")
+            # Gauge Speedometer FICO
+            score_val = int(row['SCORE_COMPORTAMENTAL'])
+            fig_gauge = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=score_val,
+                title={'text': "<b>Calificación FICO Interna</b><br><span style='font-size:0.8em;color:#64748b'>Rango [300 - 850]</span>"},
+                gauge={
+                    'axis': {'range': [300, 850], 'tickwidth': 1, 'tickcolor': "#475569"},
+                    'bar': {'color': "#0f172a", 'thickness': 0.3},
+                    'bgcolor': "#f8fafc",
+                    'steps': [
+                        {'range': [300, 580], 'color': '#fee2e2'}, # Subprime
+                        {'range': [580, 650], 'color': '#fef3c7'}, # Vulnerable
+                        {'range': [650, 720], 'color': '#e0f2fe'}, # Moderado
+                        {'range': [720, 850], 'color': '#d1fae5'}  # Prime
+                    ],
+                    'threshold': {
+                        'line': {'color': "#059669", 'width': 4},
+                        'thickness': 0.8,
+                        'value': 720
+                    }
+                }
+            ))
+            fig_gauge.update_layout(height=290, margin=dict(t=30, b=10, l=30, r=30), font={'family': 'Plus Jakarta Sans'})
+            st.plotly_chart(fig_gauge, use_container_width=True)
 
-    # ----------------------------------------------------
-    # TAB 4: EXPORTACIÓN Y LOG DE AUDITORÍA
-    # ----------------------------------------------------
+        with col_d2:
+            st.markdown("#### Dimensionamiento de Línea de Crédito")
+            st.markdown(f"""
+            <div class="dossier-card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem;">
+                    <span style="color: #64748b; font-weight: 500;">Contrato Asociado:</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700;">{row['ID_CONTRATO']}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem;">
+                    <span style="color: #64748b; font-weight: 500;">Línea Previa:</span>
+                    <span style="font-weight: 700;">${row['LIMITE_CREDITO_ACTUAL']:,.2f} MXN</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem;">
+                    <span style="color: #64748b; font-weight: 500;">Saldo Actual Insoluto:</span>
+                    <span style="font-weight: 700; color: #dc2626;">${row['SALDO_ACTUAL']:,.2f} MXN ({row['PORC_USO_LINEA']:.1f}%)</span>
+                </div>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0.8rem 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                    <span style="font-weight: 700; color: #0f172a;">Nuevo Límite Asignado:</span>
+                    <span style="font-weight: 800; font-size: 1.15rem; color: #0284c7;">${row['NUEVO_LIMITE_CREDITO']:,.2f} MXN</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-weight: 600; color: #64748b;">Delta de Exposición:</span>
+                    <span style="font-weight: 700; color: {'#059669' if row['DELTA_EXPOSICION'] >= 0 else '#dc2626'};">
+                        ${row['DELTA_EXPOSICION']:+,.2f} MXN
+                    </span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("#### Histórico de Morosidad Reciente (Vector Temporal)")
+        col_m3, col_m2, col_m1, col_min, col_sob = st.columns(5)
+        with col_m3:
+            st.metric("Atraso Hace 3 Meses (M3)", f"{int(row['DIAS_ATRASO_M3'])} días")
+        with col_m2:
+            st.metric("Atraso Hace 2 Meses (M2)", f"{int(row['DIAS_ATRASO_M2'])} días")
+        with col_m1:
+            st.metric("Atraso Mes Actual (M1)", f"{int(row['DIAS_ATRASO_M1'])} días")
+        with col_min:
+            st.metric("Pagos Mínimos Consecutivos", f"{int(row['PAGOS_MINIMOS_CONSECUTIVOS'])}")
+        with col_sob:
+            st.metric("Sobregiros Últimos 6M", f"{int(row['NUM_SOBREGIROS_U6M'])}")
+
+        st.info(f"💡 **Dictamen Regulatorio de Auditoría:** La cuenta `{row['ID_CONTRATO']}` fue evaluada bajo el árbol jerárquico de prelación de la política vigente. Se determinó la acción `{row['DECISION_FINAL']}` con código auditado `{row['CODIGO_RAZON']}`.")
+
+    # -------------------------------------------------------------------------
+    # TAB 4: CARTERA DECIDIDA Y LOGS DE AUDITORÍA
+    # -------------------------------------------------------------------------
     with tab4:
-        st.subheader("Registro de Auditoría y Exportación de Datos")
+        st.subheader("Registro de Auditoría Regulatoria y Exportación")
         
-        # Filtro interactivo de la tabla
         filtro_decision = st.multiselect(
             "Filtrar por Decisión:",
             options=df_decisions["DECISION_FINAL"].unique(),
@@ -519,16 +727,15 @@ if df_raw is not None:
                 use_container_width=True
             )
 
-    # ----------------------------------------------------
-    # TAB 5: SIMULACIÓN CHAMPION VS CHALLENGER (A/B TESTING)
-    # ----------------------------------------------------
+    # -------------------------------------------------------------------------
+    # TAB 5: SIMULACIÓN CHAMPION VS CHALLENGER (A/B TESTING AVANZADO)
+    # -------------------------------------------------------------------------
     with tab5:
         st.subheader("Experimentación de Políticas: Metodología Champion vs Challenger")
         st.markdown("""
-        En la ingeniería de motores de decisión, las estrategias de riesgo nunca se reemplazan de forma abrupta.
-        Se emplea la metodología **Champion/Challenger** (A/B Testing crediticio):
+        En la ingeniería de motores de decisión bancaria, las políticas de riesgo se evalúan bajo el framework **Champion/Challenger**:
         - **Champion:** Política probada actualmente en producción (línea base).
-        - **Challenger:** Política retadora con nuevos umbrales para evaluar si reduce mora o incrementa ingresos.
+        - **Challenger:** Política retadora con hipótesis de reducción de mora o expansión controlada.
         """)
 
         col_c_cfg1, col_c_cfg2 = st.columns(2)
@@ -595,7 +802,7 @@ if df_raw is not None:
             st.metric("Tasa Contención (Challenger)", f"{kpis_ab['tasas_challenger']['tasa_bloqueo_pct']}%",
                       delta=f"{kpis_ab['tasas_challenger']['tasa_bloqueo_pct'] - kpis_ab['tasas_champion']['tasa_bloqueo_pct']:+.2f}%", delta_color="inverse")
 
-        # Gráfica comparativa
+        # Gráfica comparativa estilizada
         df_comp_chart = pd.DataFrame({
             "Métrica": ["Aumento Línea", "Mantenimiento", "Reducción", "Bloqueo Mora", "Cancelación Default"],
             "Champion (%)": [
@@ -618,7 +825,13 @@ if df_raw is not None:
             go.Bar(name='Champion (Línea Base)', x=df_comp_chart["Métrica"], y=df_comp_chart["Champion (%)"], marker_color='#3b82f6'),
             go.Bar(name='Challenger (Retadora)', x=df_comp_chart["Métrica"], y=df_comp_chart["Challenger (%)"], marker_color='#8b5cf6')
         ])
-        fig_ab.update_layout(barmode='group', height=360, margin=dict(t=20, b=20, l=20, r=20), yaxis_title="% de Cartera")
+        fig_ab.update_layout(
+            barmode='group',
+            height=370,
+            margin=dict(t=20, b=20, l=20, r=20),
+            yaxis_title="% de Cartera",
+            font=dict(family='Plus Jakarta Sans', size=11)
+        )
         st.plotly_chart(fig_ab, use_container_width=True)
 
         st.info("💡 **Conclusión Metodológica para Comités:** Si la estrategia Challenger demuestra mitigar mayor volumen de riesgo sin sacrificar la rentabilidad de clientes Prime durante el periodo de prueba, el comité puede promover formalmente el Challenger a nuevo Champion.")
