@@ -372,6 +372,34 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
+    with st.expander("📝 Bitácora Semanal (Changelog)", expanded=False):
+        st.markdown("""
+        **v2.0.0 (Semana 2 — Actual)**
+        - 🚨 **Sistema de Alertas Tempranas (EWS):** 4 Indicadores heurísticos (EWIs) de apalancamiento, pagos mínimos, mora incipiente y sobregiros.
+        - 🛡️ **Clasificación IFRS 9 Stage 2:** Semáforos preventivos (Verde, Amarillo, Naranja, Rojo).
+        - 🎯 **Matriz de Anticipación:** Cruce de semáforo EWS vs. decisión reactiva.
+        - 🧪 **15 Pruebas Unitarias Pytest (100% pass).**
+        
+        *Racional:* Interceptar indicios sutiles de asfixia financiera con 30-60 días de ventaja antes de que el crédito madure a default severo.
+        
+        ---
+        **v1.5.0 (Semana 1)**
+        - 🥊 **Champion / Challenger:** A/B Testing estocástico y simulación *What-If*.
+        - 📐 **Matriz Bidimensional:** Incrementos (+15% a +35%) y reducciones escalonadas por deciles FICO, protegiendo el 105% del saldo insoluto.
+        - 🏎️ **Velocímetro Gauge FICO:** 4 bandas de riesgo crediticio.
+        - 🎨 **Rediseño UI/UX Fintech:** Tipografía corporativa y elevación suave.
+        
+        *Racional:* Evitar despliegues al 100% a ciegas que causen pérdidas millonarias o rechazos de clientes rentables.
+        
+        ---
+        **v1.0.0 (Línea Base Inicial)**
+        - 🏛️ **Arquitectura Limpia:** Contratos Pydantic, pipeline comportamental y árbol de prelación.
+        - 🛡️ **4 Reglas Maestras:** Knock-out, Contención, Mitigación y Expansión.
+        - 📜 **Auditoría:** Códigos de Razón y logs inmutables.
+        
+        *Racional:* Sustituir procesos vulnerables en hojas de cálculo por un motor auditable.
+        """)
+
 
 # =============================================================================
 # MOTOR DE PROCESAMIENTO

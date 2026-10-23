@@ -208,7 +208,59 @@ La siguiente tabla cruzada revela la ventaja competitiva y metodológica de impl
 
 ---
 
-## 5. Cronograma Actualizado de Próximos Avances Semanales
+## 5. Bitácora de Cambios y Racional Metodológico (Changelog Semanal)
+
+Para garantizar la auditabilidad y el rigor metodológico exigido en la Residencia Profesional, a continuación se desglosa la bitácora comparativa de cambios entre el avance previo (Semana 1) y el presente avance (Semana 2), justificando el racional técnico y financiero detrás de cada implementación:
+
+```
+                            EVOLUCIÓN ARQUITECTÓNICA SEMANAL
+  ┌────────────────────────────────────────┐       ┌────────────────────────────────────────┐
+  │         SEMANA 1 (Versión 1.5.0)       │       │         SEMANA 2 (Versión 2.0.0)       │
+  ├────────────────────────────────────────┤       ├────────────────────────────────────────┤
+  │ • Framework Champion / Challenger      │       │ • Sistema de Alertas Tempranas (EWS)   │
+  │ • Matriz Bidimensional por Deciles     │ ────> │ • 4 Indicadores Heurísticos de Estrés  │
+  │ • Rediseño UI/UX Fintech & Gauge FICO  │       │ • Clasificación Prospectiva IFRS 9 St2 │
+  │ • 12 Pruebas Unitarias Pytest          │       │ • 15 Pruebas Unitarias Pytest (100%)   │
+  └────────────────────────────────────────┘       └────────────────────────────────────────┘
+```
+
+### 5.1 Semana 1 (Versión 1.5.0): Experimentación Estratégica y Matriz de Deciles
+
+#### ¿Qué se implementó?
+1. **Módulo Champion / Challenger (`src/engine/champion_challenger.py`):** Motor de partición pseudoaleatoria de tráfico (A/B testing) con simulación simultánea contrafactual (*What-If Analysis*).
+2. **Matriz Bidimensional de Límites por Deciles (`PolicyParameters.habilitar_matriz_dinamica`):**
+   - Incrementos escalonados: Super Prime ($\ge 800$) al $+35\%$, Prime Alto ($750-799$) al $+25\%$, Prime Estándar ($720-749$) al $+15\%$.
+   - Reducciones escalonadas: Subprime Severo ($< 520$) al $50\%$, Subprime Moderado ($520-579$) al $65\%$, con salvaguarda del $105\%$ del saldo insoluto.
+3. **Rediseño UI/UX Fintech:** Fuentes *Plus Jakarta Sans* y *JetBrains Mono*, tacómetro interactivo FICO en Plotly y tarjetas KPI con elevación suave.
+4. **Batería de Pruebas Unitarias:** Ampliación a 12 pruebas automatizadas en Pytest.
+
+#### ¿Por qué se implementó? (Racional Técnico y Financiero):
+- **Mitigación de Riesgo Operativo en Despliegue:** En la banca real y en herramientas empresariales tipo Experian PowerCurve, una entidad jamás implementa un cambio de política directamente sobre el 100% de su cartera. Modificar un punto de corte (*cut-off*) de mora o score sin probarlo empíricamente puede provocar dos desastres simétricos: (a) relajar el filtro y causar pérdidas por impago multimillonarias, o (b) endurecerlo en exceso y rechazar a clientes de alta rentabilidad que migrarán a competidores. El marco Champion/Challenger permite probar variantes sobre una muestra homogénea (e.g., 20% Challenger) midiendo la variación de exposición y la tasa de contención antes de la aprobación definitiva por comités de riesgo.
+- **Eficiencia en la Asignación de Capital:** Otorgar incrementos de cupo con un factor estático plano (e.g., +25% parejo a todos los aprobados) es una heurística deficiente. Un cliente con Score de 820 puntos ostenta una probabilidad de default sustancialmente inferior a la de un cliente con 725 puntos; calibrar el aumento según el decil maximiza el retorno ajustado por riesgo (*RAROC*). Asimismo, al reducir límites por deterioro de score, respetar un piso del 105% del saldo insoluto evita provocar **sobregiros técnicos artificiales**, los cuales vulneran los derechos del consumidor y generan distorsiones en las centrales de riesgo.
+
+---
+
+### 5.2 Semana 2 (Versión 2.0.0 — Entrega Actual): Sistema de Alertas Tempranas (EWS)
+
+#### ¿Qué se implementó?
+1. **Módulo de Alertas Tempranas (`src/engine/early_warning.py`):** Clase `EarlyWarningSystem` y catálogo formal de definiciones `EWI_CATALOG`.
+2. **4 Indicadores Clave de Estrés Financiero (EWIs):**
+   - `FLAG_EWI_USO`: Utilización $\ge 85.0\%$.
+   - `FLAG_EWI_MINIMOS`: $\ge 2$ pagos mínimos consecutivos.
+   - `FLAG_EWI_MORA_INCIPIENTE`: Mora creciente de 1 a 29 días ($M_1 \ge M_2$).
+   - `FLAG_EWI_VULNERABILIDAD`: $\ge 1$ sobregiro reciente o convenio de reestructura.
+3. **Semáforo Preventivo Graduado y Acciones Operativas:** 🟢 *Verde Normal*, 🟡 *Amarillo Vigilancia*, 🟠 *Naranja Moderado* y 🔴 *Rojo Crítico*.
+4. **Pestaña 3 en Streamlit ("🚨 Alertas Tempranas") y Diagnóstico en Expediente 360°:** Visualización de KPIs de semáforo, distribución de indicadores, matriz de anticipación cruzada y pastillas de diagnóstico por cliente.
+5. **Batería de Pruebas Unitarias Ampliada:** 15 pruebas unitarias automatizadas con cobertura total de los nuevos flujos lógicos.
+
+#### ¿Por qué se implementó? (Racional Técnico y Financiero):
+- **Superación del Paradigma Reactivo:** Los motores tradicionales operan de manera reactiva: esperan a que el cliente caiga en mora de 30 o 90 días para recién aplicar una política de contención o castigo. Sin embargo, para cuando una cuenta alcanza 90 días de mora, la probabilidad estadística de recuperación desciende por debajo del 25% y los costos asociados a cobranza judicial y quebranto son irreversibles. Era indispensable incorporar una capa algorítmica previa orientada a la **interceptación oportuna**.
+- **Cumplimiento de Estándares Internacionales (IFRS 9 Stage 2 / Basilea III):** La regulación bancaria penaliza severamente el aprovisionamiento tardío de cartera. Exige identificar activamente el **Incremento Significativo del Riesgo de Crédito (SICR)** para transferir el contrato a *Stage 2* y calcular reservas sobre la pérdida esperada de toda la vida del crédito (*Lifetime ECL*). El EWS dota al prototipo del mecanismo matemático exacto para fundamentar este cumplimiento regulatorio.
+- **Validación Cuantitativa de Valor Agregado:** Los resultados experimentales sobre las 2,500 cuentas demuestran el valor de este desarrollo: el modelo reactivo clasificaba a **331 clientes en riesgo alto/moderado** como aptos para `MANTENER_CONDICIONES_ACTUALES` simplemente porque aún no acumulaban 30 días de mora contractual. El EWS detectó que estos clientes ya presentaban sobregiros, utilización saturada y pagos mínimos reiterados, permitiendo a la entidad congelar líneas adicionales de financiamiento y aplicar recordatorios preventivos con 30 a 60 días de ventaja.
+
+---
+
+## 6. Cronograma Actualizado de Próximos Avances Semanales
 
 ```
                                   CRONOGRAMA DE ENTREGABLES
@@ -239,3 +291,4 @@ La siguiente tabla cruzada revela la ventaja competitiva y metodológica de impl
 **Marco Antonio Oroza Ortega**  
 División de Informática  
 Tecnológico de Estudios Superiores de Ecatepec (TESE)
+
