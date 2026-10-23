@@ -12,6 +12,7 @@ from src.engine.rules import (
 from src.engine.strategy_manager import DecisionEngine
 from src.engine.audit import generate_audit_summary
 from src.engine.champion_challenger import ChampionChallengerSimulator
+from src.engine.early_warning import EarlyWarningSystem, EWI_CATALOG
 
 __all__ = [
     "PolicyParameters",
@@ -20,6 +21,8 @@ __all__ = [
     "ESTATUS_CUENTA",
     "DecisionEngine",
     "ChampionChallengerSimulator",
+    "EarlyWarningSystem",
+    "EWI_CATALOG",
     "generate_audit_summary",
     "evaluate_rule_1_knockout",
     "evaluate_rule_2_contencion",

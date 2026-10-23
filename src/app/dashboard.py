@@ -25,6 +25,7 @@ from src.engine.rules import PolicyParameters, REASON_CODES, DECISION_NAMES
 from src.engine.strategy_manager import DecisionEngine
 from src.engine.audit import generate_audit_summary
 from src.engine.champion_challenger import ChampionChallengerSimulator
+from src.engine.early_warning import EarlyWarningSystem, EWI_CATALOG
 from src.data_generator import generate_synthetic_portfolio
 
 
@@ -222,6 +223,20 @@ st.markdown("""
     .dec-r2 { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
     .dec-r1 { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
+    /* BADGES DE ALERTAS TEMPRANAS (EWS) */
+    .badge-ews {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.76rem;
+        letter-spacing: 0.3px;
+    }
+    .ews-rojo { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+    .ews-naranja { background: #ffedd5; color: #9a3412; border: 1px solid #fb923c; }
+    .ews-amarillo { background: #fef9c3; color: #854d0e; border: 1px solid #facc15; }
+    .ews-verde { background: #dcfce7; color: #166534; border: 1px solid #4ade80; }
+
     /* CARD DE AUDITORÍA Y PERFIL */
     .dossier-card {
         background: #ffffff;
@@ -326,6 +341,10 @@ with st.sidebar:
             help="Aplica incrementos (+35%, +25%, +15%) y reducciones (-50%, -35%) escalonadas según deciles de Score"
         )
 
+    with st.expander("🚨 Sistema de Alertas Tempranas (EWS)", expanded=False):
+        p_ews_uso = st.slider("Umbral EWS Uso Crítico (%):", 70.0, 95.0, 85.0, 5.0)
+        p_ews_minimos = st.slider("Umbral EWS Pagos Mínimos:", 1, 5, 2, 1)
+
     # Construcción de parámetros
     policy_params = PolicyParameters(
         dias_mora_default=p_mora_default,
@@ -367,16 +386,22 @@ if df_raw is not None:
     # 3. Orquestador de prelación jerárquica
     engine = DecisionEngine(policy_params)
     df_decisions = engine.process_portfolio(df_features)
+
+    # 4. Sistema de Alertas Tempranas (EWS)
+    ews = EarlyWarningSystem(umbral_uso=p_ews_uso, min_pagos_minimos=p_ews_minimos)
+    df_decisions = ews.evaluate_portfolio(df_decisions)
+    ews_summary = ews.generate_ews_summary(df_decisions)
     
-    # 4. Auditoría y métricas consolidadas
+    # 5. Auditoría y métricas consolidadas
     audit_summary = generate_audit_summary(df_decisions)
     
     # -------------------------------------------------------------------------
     # TABS PRINCIPALES CON EXPERIMENTACIÓN METODOLÓGICA
     # -------------------------------------------------------------------------
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📊 Resumen Ejecutivo y KPIs",
         "⚙️ Matriz de Transición & Riesgo",
+        "🚨 Alertas Tempranas (EWS)",
         "🔍 Expediente y Auditoría 360°",
         "📁 Cartera Decidida & Logs",
         "🥊 Metodología Champion vs Challenger"
@@ -577,9 +602,148 @@ if df_raw is not None:
         st.plotly_chart(fig_heat, use_container_width=True)
 
     # -------------------------------------------------------------------------
-    # TAB 3: EXPEDIENTE Y AUDITORÍA 360° (CASE REVIEW DE ALTO NIVEL)
+    # TAB 3: SISTEMA DE ALERTAS TEMPRANAS (EARLY WARNING SYSTEM - EWS)
     # -------------------------------------------------------------------------
     with tab3:
+        st.subheader("🚨 Sistema de Alertas Tempranas (Early Warning System - EWS)")
+        st.markdown("""
+        El **Sistema de Alertas Tempranas (EWS)** es el estándar de la industria bancaria para detectar indicios de estrés financiero **antes** de que los clientes maduren a mora severa o default (alineado a los requerimientos de la norma **IFRS 9 / Basilea III** para etapas de deterioro *Stage 2*).
+        """)
+
+        # 4 KPI Cards de los Semáforos EWS
+        total_eval = len(df_decisions)
+        n_rojo = int((df_decisions["NIVEL_RIESGO_EWI"] == "ROJO_CRITICO").sum())
+        n_naranja = int((df_decisions["NIVEL_RIESGO_EWI"] == "NARANJA_MODERADO").sum())
+        n_amarillo = int((df_decisions["NIVEL_RIESGO_EWI"] == "AMARILLO_VIGILANCIA").sum())
+        n_verde = int((df_decisions["NIVEL_RIESGO_EWI"] == "VERDE_NORMAL").sum())
+
+        pct_rojo = (n_rojo / max(1, total_eval)) * 100
+        pct_naranja = (n_naranja / max(1, total_eval)) * 100
+        pct_amarillo = (n_amarillo / max(1, total_eval)) * 100
+        pct_verde = (n_verde / max(1, total_eval)) * 100
+
+        st.markdown(f"""
+        <div class="kpi-container">
+            <div class="kpi-card-lux" style="border-left: 4px solid #10b981;">
+                <div class="kpi-icon-wrapper" style="background: #ecfdf5; color: #059669;">🛡️</div>
+                <div class="kpi-label">Verde (Normal)</div>
+                <div class="kpi-big-value" style="color: #059669;">{n_verde:,}</div>
+                <div class="kpi-pill kpi-pill-pos">{pct_verde:.1f}% de la cartera</div>
+            </div>
+            <div class="kpi-card-lux" style="border-left: 4px solid #f59e0b;">
+                <div class="kpi-icon-wrapper" style="background: #fefce8; color: #d97706;">⚡</div>
+                <div class="kpi-label">Amarillo (Vigilancia)</div>
+                <div class="kpi-big-value" style="color: #d97706;">{n_amarillo:,}</div>
+                <div class="kpi-pill kpi-pill-neutral">{pct_amarillo:.1f}% (1 alerta activa)</div>
+            </div>
+            <div class="kpi-card-lux" style="border-left: 4px solid #f97316;">
+                <div class="kpi-icon-wrapper" style="background: #fff7ed; color: #ea580c;">⚠️</div>
+                <div class="kpi-label">Naranja (Moderado)</div>
+                <div class="kpi-big-value" style="color: #ea580c;">{n_naranja:,}</div>
+                <div class="kpi-pill kpi-pill-neg">{pct_naranja:.1f}% (2 alertas activas)</div>
+            </div>
+            <div class="kpi-card-lux" style="border-left: 4px solid #ef4444;">
+                <div class="kpi-icon-wrapper" style="background: #fef2f2; color: #dc2626;">🚨</div>
+                <div class="kpi-label">Rojo (Estrés Crítico)</div>
+                <div class="kpi-big-value" style="color: #dc2626;">{n_rojo:,}</div>
+                <div class="kpi-pill kpi-pill-neg">{pct_rojo:.1f}% (≥3 alertas activas)</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        ews_col1, ews_col2 = st.columns([1, 1])
+
+        with ews_col1:
+            st.markdown("#### 🍩 Distribución de Semáforo Preventivo EWS")
+            df_ews_dist = df_decisions["NIVEL_RIESGO_EWI"].value_counts().reset_index()
+            df_ews_dist.columns = ["Nivel", "Cuentas"]
+            ews_colors = {
+                "VERDE_NORMAL": "#10b981",
+                "AMARILLO_VIGILANCIA": "#f59e0b",
+                "NARANJA_MODERADO": "#f97316",
+                "ROJO_CRITICO": "#ef4444"
+            }
+            fig_ews_donut = px.pie(
+                df_ews_dist,
+                names="Nivel",
+                values="Cuentas",
+                color="Nivel",
+                color_discrete_map=ews_colors,
+                hole=0.55
+            )
+            fig_ews_donut.update_traces(
+                textposition='inside',
+                textinfo='percent+label',
+                marker=dict(line=dict(color='#ffffff', width=2))
+            )
+            fig_ews_donut.update_layout(
+                margin=dict(t=10, b=10, l=10, r=10),
+                height=340,
+                font=dict(family='Plus Jakarta Sans', size=11),
+                showlegend=False
+            )
+            st.plotly_chart(fig_ews_donut, use_container_width=True)
+
+        with ews_col2:
+            st.markdown("#### 📊 Gatillos de Alerta Temprana Activados (EWIs)")
+            ind_counts = ews_summary["ocurrencias_indicadores"]
+            df_ind = pd.DataFrame([
+                {"Indicador": "EWI 1: Uso Crítico (≥85%)", "Cuentas": ind_counts["uso_critico"], "Color": "#f97316"},
+                {"Indicador": "EWI 2: Dependencia Mínimos (≥2)", "Cuentas": ind_counts["fatiga_minimos"], "Color": "#eab308"},
+                {"Indicador": "EWI 3: Mora Incipiente (1-29d)", "Cuentas": ind_counts["mora_incipiente"], "Color": "#ef4444"},
+                {"Indicador": "EWI 4: Vulnerabilidad / Sobregiro", "Cuentas": ind_counts["vulnerabilidad_presupuestal"], "Color": "#8b5cf6"}
+            ])
+            fig_ind = px.bar(
+                df_ind,
+                x="Cuentas",
+                y="Indicador",
+                orientation="h",
+                color="Indicador",
+                color_discrete_map={r["Indicador"]: r["Color"] for _, r in df_ind.iterrows()},
+                text_auto=True
+            )
+            fig_ind.update_layout(
+                margin=dict(t=10, b=10, l=10, r=10),
+                height=340,
+                xaxis_title="Cuentas que detonan el indicador",
+                yaxis_title="",
+                font=dict(family='Plus Jakarta Sans', size=11),
+                showlegend=False
+            )
+            st.plotly_chart(fig_ind, use_container_width=True)
+
+        st.markdown("---")
+        st.markdown("#### 🎯 Matriz de Anticipación: Semáforo EWS vs Decisión de Política Actual")
+        st.caption("Esta matriz cruzada revela clientes que actualmente se mantienen con crédito activo pero que el EWS ya detecta en estrés financiero incipiente.")
+        
+        cross_ews_dec = pd.crosstab(
+            df_decisions["NIVEL_RIESGO_EWI"],
+            df_decisions["DECISION_FINAL"],
+            margins=True,
+            margins_name="Total"
+        )
+        st.dataframe(cross_ews_dec, use_container_width=True)
+
+        st.markdown("#### 📋 Padrón de Cuentas Bajo Vigilancia Preventiva")
+        col_fil_ews1, col_fil_ews2 = st.columns([1, 2])
+        with col_fil_ews1:
+            filtro_nivel_ews = st.multiselect(
+                "Filtrar por Nivel de Riesgo EWS:",
+                options=["ROJO_CRITICO", "NARANJA_MODERADO", "AMARILLO_VIGILANCIA", "VERDE_NORMAL"],
+                default=["ROJO_CRITICO", "NARANJA_MODERADO"]
+            )
+        
+        df_ews_table = df_decisions[df_decisions["NIVEL_RIESGO_EWI"].isin(filtro_nivel_ews)]
+        cols_ews_show = [
+            "ID_CLIENTE", "SCORE_COMPORTAMENTAL", "PORC_USO_LINEA", "PAGOS_MINIMOS_CONSECUTIVOS",
+            "DIAS_ATRASO_M1", "NUM_ALERTAS_EWI", "NIVEL_RIESGO_EWI", "ACCION_PREVENTIVA_EWI", "DECISION_FINAL"
+        ]
+        st.dataframe(df_ews_table[cols_ews_show], use_container_width=True, height=280)
+
+    # -------------------------------------------------------------------------
+    # TAB 4: EXPEDIENTE Y AUDITORÍA 360° (CASE REVIEW DE ALTO NIVEL)
+    # -------------------------------------------------------------------------
+    with tab4:
         st.subheader("Auditoría Individual de Cuenta (Expediente de Riesgo 360°)")
         
         cuenta_ids = df_decisions["ID_CLIENTE"].tolist()
@@ -596,11 +760,18 @@ if df_raw is not None:
         elif row["REGLA_DISPARADA"] == "R2_CONTENCION": badge_class = "dec-r2"
         elif row["REGLA_DISPARADA"] == "R1_KNOCKOUT": badge_class = "dec-r1"
 
+        # Badge EWS
+        ews_badge_class = "ews-verde"
+        if row["NIVEL_RIESGO_EWI"] == "ROJO_CRITICO": ews_badge_class = "ews-rojo"
+        elif row["NIVEL_RIESGO_EWI"] == "NARANJA_MODERADO": ews_badge_class = "ews-naranja"
+        elif row["NIVEL_RIESGO_EWI"] == "AMARILLO_VIGILANCIA": ews_badge_class = "ews-amarillo"
+
         # Banner de veredicto
         st.markdown(f"""
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <div>
                 <span class="badge-decision {badge_class}" style="font-size: 0.85rem; padding: 6px 14px;">{row['DECISION_FINAL']}</span>
+                <span class="badge-ews {ews_badge_class}" style="font-size: 0.85rem; padding: 6px 14px; margin-left: 8px;">{row['NIVEL_RIESGO_EWI']}</span>
                 <span style="margin-left: 10px; font-weight: 600; color: #475569;">Gatillo: <code>{row['REGLA_DISPARADA']}</code></span>
             </div>
             <div style="text-align: right;">
@@ -683,25 +854,64 @@ if df_raw is not None:
         with col_sob:
             st.metric("Sobregiros Últimos 6M", f"{int(row['NUM_SOBREGIROS_U6M'])}")
 
+        # Panel de Alertas Tempranas del Cliente
+        st.markdown(f"""
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.1rem; margin-top: 1rem; margin-bottom: 1rem;">
+            <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem; margin-bottom: 0.5rem;">
+                🚨 Diagnóstico del Sistema de Alertas Tempranas (EWS)
+            </div>
+            <div style="font-size: 0.88rem; color: #475569; margin-bottom: 0.8rem;">
+                <strong>Acción Preventiva Recomendada:</strong> <code>{row['ACCION_PREVENTIVA_EWI']}</code> &nbsp;•&nbsp; 
+                <strong>Alertas Totales:</strong> <code>{row['NUM_ALERTAS_EWI']} / 4</code>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <span class="kpi-pill {'kpi-pill-neg' if row['FLAG_EWI_USO'] else 'kpi-pill-pos'}">
+                    {'🚨' if row['FLAG_EWI_USO'] else '✓'} Uso Crítico ({row['PORC_USO_LINEA']:.1f}%)
+                </span>
+                <span class="kpi-pill {'kpi-pill-neg' if row['FLAG_EWI_MINIMOS'] else 'kpi-pill-pos'}">
+                    {'⚠️' if row['FLAG_EWI_MINIMOS'] else '✓'} Dependencia Mínimos ({int(row['PAGOS_MINIMOS_CONSECUTIVOS'])})
+                </span>
+                <span class="kpi-pill {'kpi-pill-neg' if row['FLAG_EWI_MORA_INCIPIENTE'] else 'kpi-pill-pos'}">
+                    {'📉' if row['FLAG_EWI_MORA_INCIPIENTE'] else '✓'} Mora Incipiente ({int(row['DIAS_ATRASO_M1'])}d)
+                </span>
+                <span class="kpi-pill {'kpi-pill-neg' if row['FLAG_EWI_VULNERABILIDAD'] else 'kpi-pill-pos'}">
+                    {'💳' if row['FLAG_EWI_VULNERABILIDAD'] else '✓'} Sobregiro/Reest ({int(row['NUM_SOBREGIROS_U6M'])} sob.)
+                </span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.info(f"💡 **Dictamen Regulatorio de Auditoría:** La cuenta `{row['ID_CONTRATO']}` fue evaluada bajo el árbol jerárquico de prelación de la política vigente. Se determinó la acción `{row['DECISION_FINAL']}` con código auditado `{row['CODIGO_RAZON']}`.")
 
     # -------------------------------------------------------------------------
-    # TAB 4: CARTERA DECIDIDA Y LOGS DE AUDITORÍA
+    # TAB 5: CARTERA DECIDIDA Y LOGS DE AUDITORÍA
     # -------------------------------------------------------------------------
-    with tab4:
+    with tab5:
         st.subheader("Registro de Auditoría Regulatoria y Exportación")
         
-        filtro_decision = st.multiselect(
-            "Filtrar por Decisión:",
-            options=df_decisions["DECISION_FINAL"].unique(),
-            default=df_decisions["DECISION_FINAL"].unique()
-        )
+        col_fil1, col_fil2 = st.columns(2)
+        with col_fil1:
+            filtro_decision = st.multiselect(
+                "Filtrar por Decisión:",
+                options=df_decisions["DECISION_FINAL"].unique(),
+                default=df_decisions["DECISION_FINAL"].unique()
+            )
+        with col_fil2:
+            filtro_ews = st.multiselect(
+                "Filtrar por Nivel de Riesgo EWS:",
+                options=df_decisions["NIVEL_RIESGO_EWI"].unique(),
+                default=df_decisions["NIVEL_RIESGO_EWI"].unique()
+            )
         
-        df_filtered = df_decisions[df_decisions["DECISION_FINAL"].isin(filtro_decision)]
+        df_filtered = df_decisions[
+            df_decisions["DECISION_FINAL"].isin(filtro_decision) &
+            df_decisions["NIVEL_RIESGO_EWI"].isin(filtro_ews)
+        ]
         
         cols_display = [
             "ID_CLIENTE", "SCORE_COMPORTAMENTAL", "LIMITE_CREDITO_ACTUAL", "SALDO_ACTUAL",
             "PORC_USO_LINEA", "DIAS_ATRASO_M1", "PAGOS_MINIMOS_CONSECUTIVOS",
+            "NIVEL_RIESGO_EWI", "NUM_ALERTAS_EWI", "ACCION_PREVENTIVA_EWI",
             "REGLA_DISPARADA", "DECISION_FINAL", "NUEVO_LIMITE_CREDITO", "DELTA_EXPOSICION", "CODIGO_RAZON"
         ]
         st.dataframe(df_filtered[cols_display], use_container_width=True, height=350)
@@ -728,9 +938,9 @@ if df_raw is not None:
             )
 
     # -------------------------------------------------------------------------
-    # TAB 5: SIMULACIÓN CHAMPION VS CHALLENGER (A/B TESTING AVANZADO)
+    # TAB 6: SIMULACIÓN CHAMPION VS CHALLENGER (A/B TESTING AVANZADO)
     # -------------------------------------------------------------------------
-    with tab5:
+    with tab6:
         st.subheader("Experimentación de Políticas: Metodología Champion vs Challenger")
         st.markdown("""
         En la ingeniería de motores de decisión bancaria, las políticas de riesgo se evalúan bajo el framework **Champion/Challenger**:

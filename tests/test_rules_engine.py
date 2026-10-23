@@ -233,3 +233,84 @@ def test_champion_challenger_simulation():
     assert kpis["muestras"]["cuentas_champion"] + kpis["muestras"]["cuentas_challenger"] == 10
     assert "tasas_champion" in kpis and "tasas_challenger" in kpis
 
+
+def test_ews_individual_indicators():
+    """Prueba unitaria de cada uno de los 4 Indicadores de Alerta Temprana (EWIs)."""
+    from src.engine.early_warning import EarlyWarningSystem
+
+    ews = EarlyWarningSystem(umbral_uso=85.0, min_pagos_minimos=2)
+
+    # 1. Alerta por Uso Crítico (>= 85%)
+    df_uso = make_single_account_df(LIMITE_CREDITO_ACTUAL=10000.0, SALDO_ACTUAL=9000.0) # 90%
+    res_uso = ews.evaluate_portfolio(df_uso)
+    assert res_uso.iloc[0]["FLAG_EWI_USO"] == 1
+
+    # 2. Alerta por Pagos Mínimos Consecutivos (>= 2)
+    df_min = make_single_account_df(PAGOS_MINIMOS_CONSECUTIVOS=3)
+    res_min = ews.evaluate_portfolio(df_min)
+    assert res_min.iloc[0]["FLAG_EWI_MINIMOS"] == 1
+
+    # 3. Alerta por Mora Incipiente Creciente (M1 > 0, M1 < 30, M1 >= M2)
+    df_mora = make_single_account_df(DIAS_ATRASO_M1=20, DIAS_ATRASO_M2=10)
+    res_mora = ews.evaluate_portfolio(df_mora)
+    assert res_mora.iloc[0]["FLAG_EWI_MORA_INCIPIENTE"] == 1
+
+    # 4. Alerta por Vulnerabilidad (Sobregiro o Reestructura)
+    df_sob = make_single_account_df(NUM_SOBREGIROS_U6M=1)
+    res_sob = ews.evaluate_portfolio(df_sob)
+    assert res_sob.iloc[0]["FLAG_EWI_VULNERABILIDAD"] == 1
+
+
+def test_ews_risk_tiers_classification():
+    """Prueba que la agregación de alertas asigne el semáforo y acción preventiva correcta."""
+    from src.engine.early_warning import EarlyWarningSystem
+
+    ews = EarlyWarningSystem()
+
+    # Verde: 0 alertas
+    df_verde = make_single_account_df(SALDO_ACTUAL=2000.0, LIMITE_CREDITO_ACTUAL=20000.0)
+    res_verde = ews.evaluate_portfolio(df_verde)
+    assert res_verde.iloc[0]["NIVEL_RIESGO_EWI"] == "VERDE_NORMAL"
+    assert res_verde.iloc[0]["NUM_ALERTAS_EWI"] == 0
+
+    # Amarillo: 1 alerta (sólo uso)
+    df_amarillo = make_single_account_df(SALDO_ACTUAL=18000.0, LIMITE_CREDITO_ACTUAL=20000.0) # 90%
+    res_amarillo = ews.evaluate_portfolio(df_amarillo)
+    assert res_amarillo.iloc[0]["NIVEL_RIESGO_EWI"] == "AMARILLO_VIGILANCIA"
+    assert res_amarillo.iloc[0]["NUM_ALERTAS_EWI"] == 1
+
+    # Naranja: 2 alertas (uso + minimos)
+    df_naranja = make_single_account_df(
+        SALDO_ACTUAL=18000.0, LIMITE_CREDITO_ACTUAL=20000.0, PAGOS_MINIMOS_CONSECUTIVOS=2
+    )
+    res_naranja = ews.evaluate_portfolio(df_naranja)
+    assert res_naranja.iloc[0]["NIVEL_RIESGO_EWI"] == "NARANJA_MODERADO"
+    assert res_naranja.iloc[0]["ACCION_PREVENTIVA_EWI"] == "REDUCIR_LINEA_Y_RESTRINGIR_SOBREGIROS"
+
+    # Rojo: 3 o más alertas (uso + minimos + sobregiro)
+    df_rojo = make_single_account_df(
+        SALDO_ACTUAL=18000.0, LIMITE_CREDITO_ACTUAL=20000.0, PAGOS_MINIMOS_CONSECUTIVOS=3, NUM_SOBREGIROS_U6M=1
+    )
+    res_rojo = ews.evaluate_portfolio(df_rojo)
+    assert res_rojo.iloc[0]["NIVEL_RIESGO_EWI"] == "ROJO_CRITICO"
+    assert res_rojo.iloc[0]["ACCION_PREVENTIVA_EWI"] == "BLOQUEO_PREVENTIVO_Y_CONTACTO_RETENCION"
+
+
+def test_ews_summary_generation():
+    """Prueba la generación de métricas y KPIs consolidados de Alertas Tempranas."""
+    from src.engine.early_warning import EarlyWarningSystem
+
+    ews = EarlyWarningSystem()
+    df1 = make_single_account_df(SALDO_ACTUAL=2000.0, LIMITE_CREDITO_ACTUAL=20000.0) # Verde
+    df2 = make_single_account_df(SALDO_ACTUAL=18000.0, LIMITE_CREDITO_ACTUAL=20000.0, PAGOS_MINIMOS_CONSECUTIVOS=3) # Naranja
+    df_batch = pd.concat([df1, df2], ignore_index=True)
+
+    evaluated = ews.evaluate_portfolio(df_batch)
+    summary = ews.generate_ews_summary(evaluated)
+
+    assert summary["total_cuentas"] == 2
+    assert "distribucion_niveles" in summary
+    assert summary["ocurrencias_indicadores"]["uso_critico"] == 1
+    assert summary["porcentaje_en_riesgo_activo"] == 50.0
+
+
