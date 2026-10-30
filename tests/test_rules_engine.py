@@ -314,3 +314,48 @@ def test_ews_summary_generation():
     assert summary["porcentaje_en_riesgo_activo"] == 50.0
 
 
+def test_pdf_report_generation(engine):
+    """Prueba la generación automatizada de informes formales de auditoría en PDF."""
+    from src.engine.early_warning import EarlyWarningSystem
+    from src.engine.reporter import generate_pdf_audit_report
+
+    df = make_single_account_df(SCORE_COMPORTAMENTAL=780, LIMITE_CREDITO_ACTUAL=40000.0, SALDO_ACTUAL=15000.0)
+    df_dec = engine.process_portfolio(df)
+    ews = EarlyWarningSystem()
+    df_eval = ews.evaluate_portfolio(df_dec)
+    audit = generate_audit_summary(df_eval)
+    ews_sum = ews.generate_ews_summary(df_eval)
+
+    pdf_bytes = generate_pdf_audit_report(df_eval, audit, ews_sum)
+
+    assert isinstance(pdf_bytes, bytes)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF-")
+
+
+def test_excel_workbook_generation(engine):
+    """Prueba la generación del libro contable multi-hoja estructurado en Excel (.xlsx)."""
+    import io
+    import openpyxl
+    from src.engine.early_warning import EarlyWarningSystem
+    from src.engine.reporter import generate_excel_audit_workbook
+
+    df = make_single_account_df(SCORE_COMPORTAMENTAL=780, LIMITE_CREDITO_ACTUAL=40000.0, SALDO_ACTUAL=15000.0)
+    df_dec = engine.process_portfolio(df)
+    ews = EarlyWarningSystem()
+    df_eval = ews.evaluate_portfolio(df_dec)
+    audit = generate_audit_summary(df_eval)
+    ews_sum = ews.generate_ews_summary(df_eval)
+
+    xlsx_bytes = generate_excel_audit_workbook(df_eval, audit, ews_sum)
+
+    assert isinstance(xlsx_bytes, bytes)
+    assert len(xlsx_bytes) > 2000
+
+    # Cargar el libro para verificar que OpenPyXL lo valida y contiene las 4 hojas esperadas
+    wb = openpyxl.load_workbook(io.BytesIO(xlsx_bytes))
+    expected_sheets = ["Resumen_Ejecutivo", "Alertas_Tempranas_EWS", "Cartera_Decidida", "Log_Auditoria"]
+    assert wb.sheetnames == expected_sheets
+
+
+

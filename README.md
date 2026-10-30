@@ -5,7 +5,7 @@
 - **Autor / Residente:** Marco Antonio Oroza Ortega  
 - **Institución Académica:** Tecnológico de Estudios Superiores de Ecatepec (TESE)  
 - **División Académica:** División de Informática  
-- **Versión:** 2.0.0 (Fase 2: Champion/Challenger y Sistema de Alertas Tempranas EWS)  
+- **Versión:** 2.5.0 (Reporting Regulatorio Automatizado en PDF y Excel .xlsx)  
 - **Despliegue Productivo en la Nube:** [https://motor-decisiones-marco.streamlit.app](https://motor-decisiones-marco.streamlit.app)  
 
 ---
@@ -25,9 +25,10 @@ El prototipo implementa una arquitectura en capas desacopladas (Clean Architectu
 4. **`src/engine/strategy_manager.py`:** Orquestador de prelación jerárquica (*Precedence Tree*) para evitar colisiones lógicas.
 5. **`src/engine/champion_challenger.py`:** Simulador de A/B Testing crediticio y partición estocástica de cartera.
 6. **`src/engine/early_warning.py`:** Sistema de Alertas Tempranas (EWS) con 4 indicadores de estrés anticipado (IFRS 9 Stage 2).
-7. **`src/engine/audit.py`:** Generador del log inmutable de auditoría para comités de riesgo.
-8. **`src/app/dashboard.py`:** Dashboard analítico e interactivo en Streamlit con 6 pestañas ejecutivas, velocímetro FICO y expediente 360°.
-9. **`tests/test_rules_engine.py`:** Batería de 15 pruebas unitarias y de estrés con Pytest (100% exitosas).
+7. **`src/engine/reporter.py`:** Generador automatizado de informes de auditoría en PDF formal (ReportLab) y libro contable en Excel .xlsx multi-hoja (OpenPyXL).
+8. **`src/engine/audit.py`:** Generador del log inmutable de auditoría para comités de riesgo.
+9. **`src/app/dashboard.py`:** Dashboard analítico e interactivo en Streamlit con 6 pestañas ejecutivas, velocímetro FICO, expediente 360° y descargas oficiales.
+10. **`tests/test_rules_engine.py`:** Batería de 17 pruebas unitarias y de estrés con Pytest (100% exitosas).
 
 ---
 

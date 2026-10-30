@@ -13,6 +13,7 @@ from src.engine.strategy_manager import DecisionEngine
 from src.engine.audit import generate_audit_summary
 from src.engine.champion_challenger import ChampionChallengerSimulator
 from src.engine.early_warning import EarlyWarningSystem, EWI_CATALOG
+from src.engine.reporter import generate_pdf_audit_report, generate_excel_audit_workbook
 
 __all__ = [
     "PolicyParameters",
@@ -24,6 +25,8 @@ __all__ = [
     "EarlyWarningSystem",
     "EWI_CATALOG",
     "generate_audit_summary",
+    "generate_pdf_audit_report",
+    "generate_excel_audit_workbook",
     "evaluate_rule_1_knockout",
     "evaluate_rule_2_contencion",
     "evaluate_rule_3_mitigacion",

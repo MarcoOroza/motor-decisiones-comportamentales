@@ -11,6 +11,33 @@
 
 Todas las modificaciones notables y evoluciones metodológicas de este proyecto se documentan en este archivo conforme al estándar *Keep a Changelog*, adaptado para el seguimiento académico y de ingeniería de software.
 
+## [2.5.0] - Semana 3 (Octubre 2026) — Reporting Regulatorio Oficial (PDF & Excel Corporativo)
+### 🚀 Agregado (New Features)
+- **Módulo `src/engine/reporter.py`:** Generador automatizado de informes ejecutivos en memoria para comités de riesgo y control normativo.
+- **Dictamen Oficial en Formato PDF (`generate_pdf_audit_report`):**
+  - Implementación con ReportLab utilizando `NumberedCanvas` (paginación "Página X de Y", membrete TESE y encabezados de auditoría).
+  - Bloque de metadata de trazabilidad con folio único `execution_id`, timestamp UTC y sello criptográfico SHA-256 de los datos decididos.
+  - Tabla de impacto financiero consolidado (Límite previo, saldo insoluto, nuevo límite, delta neto en MXN y porcentaje de variación).
+  - Tabla de distribución de decisiones estratégicas, reglas gatillo y exposición neta por política.
+  - Tabla de monitoreo prospectivo IFRS 9 Stage 2 (semáforos EWS: Verde, Amarillo, Naranja, Rojo y acciones operativas).
+  - Muestra testigo de auditoría (*Audit Trail Sampling*) con cuentas representativas de mayor impacto.
+  - Bloque formal de dictamen técnico y firmas de conformidad (Residente y Coordinación de Residencia Profesional TESE).
+- **Cuaderno Contable y de Riesgo en Excel (.xlsx) Multi-Hoja (`generate_excel_audit_workbook`):**
+  - Implementación con OpenPyXL estructurado en 4 hojas de trabajo profesionales:
+    1. `Resumen_Ejecutivo`: Metadatos, tabla de KPIs financieros con formato de moneda `$#,##0.00` y tabla de distribución por decisión.
+    2. `Alertas_Tempranas_EWS`: Métricas por nivel de riesgo y Matriz de Anticipación Cruzada (EWS vs. Decisión).
+    3. `Cartera_Decidida`: Detalle íntegro de contratos auditados con formato condicional corporativo por decisión, auto-filtros y formatos numéricos especializados.
+    4. `Log_Auditoria`: Bitácora inmutable de auditoría con hash SHA-256 y certificación de cumplimiento normativo.
+  - Auto-ajuste dinámico de ancho de columnas y estilos corporativos navy blue (`#0F172A`).
+- **Integración de Descargas en la Plataforma Web (`src/app/dashboard.py`):**
+  - Incorporación en la pestaña 5 de botones dedicados para descarga directa de informes oficiales en PDF y Excel `.xlsx`.
+  - Mantenimiento de exportación secundaria de datos crudos (CSV plano y JSON de auditoría).
+- **2 Pruebas Unitarias Automatizadas Adicionales en Pytest:** Cobertura de integridad del flujo de exportación PDF y validación de estructura multi-hoja en Excel (`tests/test_rules_engine.py`), elevando la batería a 17 pruebas unitarias (100% exitosas).
+
+### 💡 Racional Técnico y Financiero (¿Por qué se agregó?)
+- **Exigencia de Valor Probatorio y Gobierno de Datos:** En la banca real y ante inspecciones de la Comisión Nacional Bancaria y de Valores (CNBV) o auditorías de Basilea, no es admisible presentar únicamente paneles web efímeros. Se requiere la generación de **evidencias documentales formales con sello de tiempo, foliado único e inmutabilidad criptográfica**.
+- **Eficiencia Operativa para Comités Directivos:** Los comités de riesgo y crédito demandan tanto informes sintéticos de lectura ejecutiva (PDF de 2-3 páginas con dictamen) como libros contables analíticos (Excel multi-hoja) para conciliaciones contables y cálculo de provisiones IFRS 9. La automatización de estos entregables ahorra días de trabajo manual a las células de riesgo.
+
 ---
 
 ## [2.0.0] - Semana 2 (Octubre 2026) — Alertas Tempranas y Detección Proactiva de Estrés

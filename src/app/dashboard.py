@@ -26,6 +26,7 @@ from src.engine.strategy_manager import DecisionEngine
 from src.engine.audit import generate_audit_summary
 from src.engine.champion_challenger import ChampionChallengerSimulator
 from src.engine.early_warning import EarlyWarningSystem, EWI_CATALOG
+from src.engine.reporter import generate_pdf_audit_report, generate_excel_audit_workbook
 from src.data_generator import generate_synthetic_portfolio
 
 
@@ -374,11 +375,18 @@ with st.sidebar:
 
     with st.expander("📝 Bitácora Semanal (Changelog)", expanded=False):
         st.markdown("""
-        **v2.0.0 (Semana 2 — Actual)**
+        **v2.5.0 (Semana 3 — Actual)**
+        - 📄 **Dictamen Oficial en PDF:** Generación inmutable con membrete TESE, sello digital SHA-256 y tablas ejecutivas (ReportLab).
+        - 📊 **Cuaderno Contable en Excel (.xlsx):** Libro estructurado multi-hoja con formato condicional corporativo y fórmulas (OpenPyXL).
+        - 🏛️ **Auditoría Regulatoria:** Descargas integradas en memoria para comités de crédito y entes fiscalizadores.
+        
+        *Racional:* Cumplir la exigencia bancaria y regulatoria de generar expedientes documentales inmutables con sello de tiempo y valor probatorio.
+        
+        ---
+        **v2.0.0 (Semana 2)**
         - 🚨 **Sistema de Alertas Tempranas (EWS):** 4 Indicadores heurísticos (EWIs) de apalancamiento, pagos mínimos, mora incipiente y sobregiros.
         - 🛡️ **Clasificación IFRS 9 Stage 2:** Semáforos preventivos (Verde, Amarillo, Naranja, Rojo).
         - 🎯 **Matriz de Anticipación:** Cruce de semáforo EWS vs. decisión reactiva.
-        - 🧪 **15 Pruebas Unitarias Pytest (100% pass).**
         
         *Racional:* Interceptar indicios sutiles de asfixia financiera con 30-60 días de ventaja antes de que el crédito madure a default severo.
         
@@ -944,11 +952,45 @@ if df_raw is not None:
         ]
         st.dataframe(df_filtered[cols_display], use_container_width=True, height=350)
         
+        st.markdown("---")
+        st.markdown("#### 🏛️ Informes Oficiales de Auditoría Regulatoria (PDF & Excel Corporativo)")
+        st.caption("Generación inmutable en memoria con sello criptográfico SHA-256, membrete institucional del TESE y dictamen normativo.")
+
+        col_rep1, col_rep2 = st.columns(2)
+        with col_rep1:
+            try:
+                pdf_bytes = generate_pdf_audit_report(df_decisions, audit_summary, ews_summary)
+                st.download_button(
+                    label="📄 Descargar Dictamen Ejecutivo Oficial (PDF)",
+                    data=pdf_bytes,
+                    file_name=f"dictamen_auditoria_tese_{audit_summary['execution_id'][:8]}.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+                st.caption("Documento formal con membrete del TESE, resumen financiero, distribución de reglas, alertas EWS y firmas.")
+            except Exception as e:
+                st.error(f"Error al generar reporte PDF: {e}")
+
+        with col_rep2:
+            try:
+                excel_bytes = generate_excel_audit_workbook(df_decisions, audit_summary, ews_summary)
+                st.download_button(
+                    label="📊 Descargar Cuaderno Contable y de Riesgo (Excel .xlsx)",
+                    data=excel_bytes,
+                    file_name=f"cuaderno_contable_cartera_{audit_summary['execution_id'][:8]}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+                st.caption("Libro estructurado en 4 hojas: Resumen Ejecutivo, Alertas EWS, Cartera con formato condicional y Log SHA-256.")
+            except Exception as e:
+                st.error(f"Error al generar libro Excel: {e}")
+
+        st.markdown("##### 📁 Exportación Adicional de Datos Crudos")
         col_down1, col_down2 = st.columns(2)
         with col_down1:
             csv_data = df_decisions.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="📥 Descargar Cartera Decidida (CSV)",
+                label="📥 Exportar Cartera Completa (CSV Plano)",
                 data=csv_data,
                 file_name="cartera_decisiones_powercurve.csv",
                 mime="text/csv",
@@ -958,7 +1000,7 @@ if df_raw is not None:
         with col_down2:
             audit_json = json.dumps(audit_summary, indent=4).encode('utf-8')
             st.download_button(
-                label="📜 Descargar Reporte de Auditoría (JSON)",
+                label="📜 Exportar Trazabilidad de Auditoría (JSON)",
                 data=audit_json,
                 file_name=f"audit_trail_{audit_summary['execution_id'][:8]}.json",
                 mime="application/json",
