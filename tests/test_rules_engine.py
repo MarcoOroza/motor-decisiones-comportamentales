@@ -358,4 +358,52 @@ def test_excel_workbook_generation(engine):
     assert wb.sheetnames == expected_sheets
 
 
+def test_stress_testing_scalability_benchmark():
+    """Prueba la suite de benchmark de escalabilidad masiva y métricas de latencia/throughput."""
+    from src.engine.stress_testing import run_scalability_benchmark
+
+    # Evaluar con lotes de prueba rápidos
+    results = run_scalability_benchmark(batch_sizes=[250, 500], random_seed=42)
+
+    assert len(results) == 2
+    for r in results:
+        assert "volumen_cuentas" in r
+        assert "tiempo_total_seg" in r
+        assert "throughput_ops_seg" in r
+        assert "latencia_unitaria_us" in r
+        assert "memoria_pico_mb" in r
+        assert "desglose_etapas" in r
+        assert r["throughput_ops_seg"] > 1000.0  # El motor procesa miles de contratos por segundo
+        assert r["latencia_unitaria_us"] < 1000.0 # SLA estricto de latencia bancaria (< 1 milisegundo por contrato)
+
+
+def test_macroeconomic_stress_scenarios():
+    """Prueba el simulador de choques macroeconómicos de sensibilidad bajo IFRS 9 / Basilea."""
+    from src.data_generator import generate_synthetic_portfolio
+    from src.engine.stress_testing import apply_macroeconomic_shock, run_stress_scenario_comparison
+
+    df_base = generate_synthetic_portfolio(200, random_seed=42)
+    scenarios = run_stress_scenario_comparison(df_base, random_seed=42)
+
+    assert "baseline" in scenarios
+    assert "recesion" in scenarios
+    assert "crisis" in scenarios
+
+    # En crisis severa, el delta de exposición neta debe ser defensivo (menor al baseline)
+    delta_base = scenarios["baseline"]["metricas_financieras"]["delta_exposicion_neta_mxn"]
+    delta_crisis = scenarios["crisis"]["metricas_financieras"]["delta_exposicion_neta_mxn"]
+    assert delta_crisis < delta_base
+
+    # En crisis severa, el número de cancelaciones o bloqueos debe ser significativamente mayor
+    bloqueos_base = scenarios["baseline"]["distribucion_decisiones"].get("BLOQUEO_TEMPORAL_LINEA", 0)
+    bloqueos_crisis = scenarios["crisis"]["distribucion_decisiones"].get("BLOQUEO_TEMPORAL_LINEA", 0)
+    assert bloqueos_crisis > bloqueos_base
+
+    # En crisis severa, las alertas rojas de EWS aumentan
+    rojo_base = scenarios["baseline"]["distribucion_ews"].get("ROJO_CRITICO", 0)
+    rojo_crisis = scenarios["crisis"]["distribucion_ews"].get("ROJO_CRITICO", 0)
+    assert rojo_crisis > rojo_base
+
+
+
 
